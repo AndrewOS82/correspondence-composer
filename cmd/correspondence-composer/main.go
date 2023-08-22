@@ -3,7 +3,8 @@ package main
 import (
 	"encoding/xml"
 	"fmt"
-	. "xml-test/schema"
+
+	. "correspondence-composer/schemas" //nolint:all
 )
 
 func main() {

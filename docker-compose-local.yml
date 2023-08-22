@@ -1,0 +1,10 @@
+version: "3.3"
+services:
+  correspondence-composer:
+    build:
+      context: .
+      dockerfile: Dockerfile-local
+    ports:
+      - 5005:80
+    volumes:
+      - .:/go/src/app

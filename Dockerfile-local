@@ -1,0 +1,13 @@
+FROM golang:1.21-alpine
+
+RUN apk add ca-certificates git make
+
+WORKDIR /go/src/app
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+
+# Enables hot reloading
+# Depends on the application code being mounted as a volume
+RUN go install github.com/githubnemo/CompileDaemon@latest
+ENTRYPOINT CompileDaemon --build="go build -o bin/correspondence-composer cmd/correspondence-composer/main.go" --command="./bin/correspondence-composer"

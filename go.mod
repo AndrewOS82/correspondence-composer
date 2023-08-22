@@ -1,3 +1,3 @@
-module xml-test
+module correspondence-composer
 
-go 1.19
+go 1.21
