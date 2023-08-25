@@ -10,6 +10,11 @@ This is an application which listens for incoming events indicating that corresp
 
 Follow [these instructions](https://go.dev/doc/install) for installing go on Linux, Mac or Windows, then proceed to the "Run the app" section.
 
+### Setting up configs and credentials
+
+A sample env file has been provided as `.env.sample`. To run the app locally, you'll need to copy this into a `.env` file and update username, password and endpoints as necessary.
+
+To make successful requests to the rules engine you'll need to have valid credentials for the environment that the endpoints are hitting.
 
 ## Run Instructions
 
