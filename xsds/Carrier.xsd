@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:include schemaLocation="AlphanumericString.xsd" />
+    <xsd:complexType name="CARRIER">
+        <xsd:sequence>
+            <!-- Need to confirm types down the line for these - many were missing in table -->
+            <xsd:element name="CARRIER_CONT" type="AlphanumericString"/>
+            <xsd:element name="CARRIER_NAME" type="AlphanumericString"/>
+            <xsd:element name="CARRIER_ADDR_LINE1" type="AlphanumericString"/>
+            <xsd:element name="CARRIER_ADDR_LINE2" type="AlphanumericString"/>
+            <xsd:element name="CARRIER_ADDR_LINE3" type="AlphanumericString"/>
+            <xsd:element name="CARRIER_CITY" type="xsd:string"/>
+            <xsd:element name="CARRIER_STATE" type="xsd:string"/>
+            <xsd:element name="CARRIER_ZIP" type="xsd:nonNegativeInteger"/>
+            <xsd:element name="CARRIER_WEB_ADDR" type="xsd:anyURI"/>
+            <xsd:element name="CARRIER_PHONE_NUM" type="xsd:integer"/>
+            <xsd:element name="CARRIER_FAX_NUM" type="xsd:string"/>
+            <xsd:element name="CARRIER_OFFICE_HOURS" type="xsd:string"/>
+            <xsd:element name="CARRIER_OFFICE_DAYS" type="xsd:string"/>
+            <xsd:element name="CARRIER_BUDGET_CNTR" type="xsd:string"/>
+            <xsd:element name="CARRIER_POB_ADDR_LINE1" type="AlphanumericString"/>
+            <xsd:element name="CARRIER_POB_ADDR_LINE2" type="AlphanumericString"/>
+            <xsd:element name="CARRIER_POB_ADDR_LINE3" type="AlphanumericString"/>
+            <xsd:element name="CARRIER_POB_CITY" type="xsd:string"/>
+            <xsd:element name="CARRIER_POB_STATE" type="xsd:string"/>
+            <xsd:element name="CARRIER_POB_ZIP" type="xsd:nonNegativeInteger"/>
+            <xsd:element name="CARRIER_MAIL_ADDR_LINE1" type="AlphanumericString"/>
+            <xsd:element name="CARRIER_MAIL_ADDR_LINE2" type="AlphanumericString"/>
+            <xsd:element name="CARRIER_MAIL_ADDR_LINE3" type="AlphanumericString"/>
+            <xsd:element name="CARRIER_MAIL_CITY" type="xsd:string"/>
+            <xsd:element name="CARRIER_MAIL_STATE" type="xsd:string"/>
+            <xsd:element name="CARRIER_MAIL_ZIP" type="xsd:nonNegativeInteger"/>
+            <xsd:element name="CARRIER_SERVICE_CENTER" type="xsd:string"/>
+        </xsd:sequence>    
+    </xsd:complexType>
+</xsd:schema>

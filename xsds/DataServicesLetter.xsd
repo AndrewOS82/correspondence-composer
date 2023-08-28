@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:include schemaLocation="AlphanumericString.xsd" />
+    <xsd:include schemaLocation="Carrier.xsd" />
+    <xsd:include schemaLocation="Policy.xsd" />
+    <xsd:include schemaLocation="Role.xsd" />
+    <xsd:element name="DataServicesLetter">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="POLICIES" type="POLICY" minOccurs="1" />
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+</xsd:schema>

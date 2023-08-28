@@ -59,4 +59,4 @@ Then to generate (or regenerate) Go types from an xsd file run the following com
 
 `make generate-xsd-types xsd=<XsdFileName> output=<output_file_name>`
 
-This command will read the xsd file saved as `<XsdFileName>` in the xsds directory and output Go types in a file named `<output_file_name>` in the schemas directory.
+This command will read the xsd file saved as `<XsdFileName>` in the xsds directory and output Go types in a file named `<output_file_name>` in the `models/generated` directory.

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:include schemaLocation="AlphanumericString.xsd" />
+    <xsd:include schemaLocation="Role.xsd" />
+    <xsd:include schemaLocation="Carrier.xsd" />
+    <xsd:complexType name="POLICY">
+        <xsd:sequence>
+            <xsd:element name="POL_CONT" type="AlphanumericString"/>
+            <xsd:element name="POL_PLAN_CODE" type="AlphanumericString" />
+            <xsd:element name="POL_PRODUCT" type="xsd:string"/>
+            <xsd:element name="POL_QUAL_DESC" type="xsd:string"/>
+            <xsd:element name="POL_COMP_NAME" type="xsd:string"/>
+            <xsd:element name="POL_CYCLE_DATE" type="xsd:date"/>
+            <xsd:element name="POL_SERVICE_NAME" type="xsd:string"/>
+            <xsd:element name="POL_SERVICE_DESC" type="xsd:string"/>
+            <!-- TBD - confirm type of below -->
+            <xsd:element name="POL_SOURCE" type="xsd:string"/>
+            <xsd:element name="POL_POL_NUM" type="AlphanumericString" />
+            <xsd:element name="POL_PRDCT_COMP" type="xsd:string"/>
+            <xsd:element name="POL_LOB" type="xsd:string"/>
+            <xsd:element name="POL_PRCSG_COMP" type="xsd:string"/>
+            <xsd:element name="POL_SOURCE" type="xsd:string"/>
+            <!-- TBD - confirm type of below -->
+            <xsd:element name="POL_TRACKING_ID" type="xsd:string"/>
+            <xsd:element name="POL_DOC_TYPE" type="xsd:string"/>
+            <xsd:element name="POL_PRDCT_MKTG_NAME" type="xsd:string"/>
+            <xsd:element name="POL_ISSUE_DATE" type="xsd:date"/>
+            <xsd:element name="POL_ISSUE_STATE" type="xsd:string"/>
+            <xsd:element name="POL_CURR_YR" type="xsd:date"/>
+            <xsd:element name="POL_SYS_CODE" type="xsd:string"/>
+            <xsd:element name="POL_DTH_BNFT_GAUR_AGE" type="xsd:string"/>
+            <xsd:element name="POL_DB_TYPE_CODE" type="xsd:string"/>
+            <xsd:element name="POL_RESIDENCE_STATE" type="xsd:string"/>
+            <xsd:element name="POL_TEL_TXFR_IND" type="xsd:string"/>
+            <xsd:element name="POL_HMR_IND" type="xsd:positiveInteger"/>
+            <xsd:element name="POL_GROUP_IND" type="xsd:string"/>
+            <xsd:element name="POL_PLAN_TYPE" type="xsd:string"/>
+            <xsd:element name="POL_CONT_YEAR" type="xsd:positiveInteger"/>
+            <xsd:element name="POL_IRR_STRATEGY" type="xsd:string"/>
+            <xsd:element name="POL_RUN_DATE" type="xsd:date"/>
+            <xsd:element name="POL_AGE_55" type="xsd:string"/>
+            <!-- TBD - confirm type of below -->
+            <xsd:element name="POL_POL_YEAR" type="xsd:date"/>
+            <xsd:element name="ROLES" type="ROLE" minOccurs="1"/>
+            <xsd:element name="CARRIERINFORMATION" type="CARRIER" />
+        </xsd:sequence>    
+    </xsd:complexType>
+</xsd:schema>

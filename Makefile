@@ -34,5 +34,5 @@ lint-fix:
 	golangci-lint run -c .golangci.yml --fix
 
 generate-xsd-types:
-	xgen -i "./xsds/$(xsd).xsd" -o "./schemas/$(output).go" -l Go
+	xgen -i "./xsds/$(xsd).xsd" -o "./models/generated/$(output).go" -l Go
 
