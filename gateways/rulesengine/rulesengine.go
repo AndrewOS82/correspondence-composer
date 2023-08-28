@@ -8,25 +8,31 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
-	"path/filepath"
-
-	"github.com/joho/godotenv"
 
 	"correspondence-composer/models"
 )
 
-type gateway struct{}
+type gateway struct {
+	config Config
+}
+
+type Config struct {
+	Username        string
+	Password        string
+	AuthEndpoint    string
+	AuthClientCode  string
+	ExecuteEndpoint string
+	ExecuteClient   string
+}
 
 // nolint
-func New() *gateway {
-	return &gateway{}
+func New(config Config) *gateway {
+	return &gateway{
+		config: config,
+	}
 }
 
 func (g *gateway) ExecuteRules(rules []*models.Rule) (*models.RulesAdminResponse, error) {
-	// TODO: set up a proper config file at the root level of the application that loads .env
-	g.loadEnvFile()
-
 	if len(rules) < 1 {
 		return nil, errors.New("no rules provided")
 	}
@@ -45,8 +51,6 @@ func (g *gateway) ExecuteRules(rules []*models.Rule) (*models.RulesAdminResponse
 }
 
 func (g *gateway) executeRules(token *models.Token, rules []*models.Rule) (*models.RulesAdminResponse, error) {
-	apiURL := os.Getenv("RULES_ENGINE_EXECUTE_ENDPOINT")
-
 	rulesRequest := g.buildRulesRequest(rules)
 	requestBody, err := json.Marshal(rulesRequest)
 	if err != nil {
@@ -55,7 +59,7 @@ func (g *gateway) executeRules(token *models.Token, rules []*models.Rule) (*mode
 	}
 
 	client := &http.Client{}
-	r, _ := http.NewRequest("POST", apiURL, bytes.NewBuffer(requestBody))
+	r, _ := http.NewRequest("POST", g.config.ExecuteEndpoint, bytes.NewBuffer(requestBody))
 	r.Header.Add("Content-Type", "application/json")
 	r.Header.Add("authorization", "Bearer "+token.Token)
 	resp, err := client.Do(r)
@@ -80,17 +84,13 @@ func (g *gateway) executeRules(token *models.Token, rules []*models.Rule) (*mode
 }
 
 func (g *gateway) getAuthToken() (*models.Token, error) {
-	apiURL := os.Getenv("RULES_ENGINE_AUTH_ENDPOINT")
-	username := os.Getenv("RULES_ENGINE_USERNAME")
-	password := os.Getenv("RULES_ENGINE_PASSWORD")
-	clientCode := os.Getenv("RULES_ENGINE_AUTH_CLIENT_CODE")
 	data := url.Values{
-		"username":   {username},
-		"password":   {password},
-		"clientCode": {clientCode},
+		"username":   {g.config.Username},
+		"password":   {g.config.Password},
+		"clientCode": {g.config.AuthClientCode},
 	}
 
-	resp, err := http.PostForm(apiURL, data)
+	resp, err := http.PostForm(g.config.AuthEndpoint, data)
 	if err != nil {
 		fmt.Printf("Error fetching token: %v\n", err)
 		return nil, err
@@ -128,9 +128,8 @@ func (g *gateway) getAuthToken() (*models.Token, error) {
 //		]
 //	}
 func (g *gateway) buildRulesRequest(rules []*models.Rule) *models.RulesAdminRequest {
-	client := os.Getenv("RULES_ENGINE_EXECUTE_CLIENT")
 	rulesRequest := &models.RulesAdminRequest{
-		Client: client,
+		Client: g.config.ExecuteClient,
 		Source: "Camunda",
 		Rules:  rules,
 	}
@@ -148,23 +147,4 @@ func (g *gateway) responseBody(resp *http.Response) ([]byte, error) {
 	defer resp.Body.Close()
 
 	return body, nil
-}
-
-// TODO: move this into a shared util and set up a proper config file
-func (g *gateway) loadEnvFile() {
-	path, _ := os.Getwd()
-	for {
-		envFile := path + "/.env"
-		if _, err := os.Stat(envFile); err == nil {
-			err := godotenv.Load(envFile)
-			if err != nil {
-				fmt.Println(err)
-			}
-		}
-		if len(path) <= 1 {
-			break
-		}
-
-		path = filepath.Dir(path)
-	}
 }

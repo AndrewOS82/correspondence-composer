@@ -4,14 +4,23 @@ import (
 	"encoding/xml"
 	"fmt"
 
+	"correspondence-composer/config"
 	rulesgateway "correspondence-composer/gateways/rulesengine"
 	. "correspondence-composer/schemas" //nolint:all
 	"correspondence-composer/service"
 	"correspondence-composer/usecases"
+	"correspondence-composer/utils/log"
 )
 
+const serviceName = "correspondence-composer"
+
 func main() {
-	rulesEngineGateway := rulesgateway.New()
+	logger := log.New(log.Config{
+		ServiceName: serviceName,
+	})
+	config := config.GetConfig(logger)
+
+	rulesEngineGateway := rulesgateway.New(config.RulesEngine)
 	composer := service.Composer{
 		DataFetcher: &usecases.DataFetcher{},
 		RuleExecutor: &usecases.RuleExecutor{
