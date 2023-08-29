@@ -13,59 +13,45 @@ import (
 )
 
 type gateway struct {
-	config Config
+	config    Config
+	authToken *models.Token
 }
 
 type Config struct {
 	Username        string
 	Password        string
 	AuthEndpoint    string
-	AuthClientCode  string
+	ClientCode      string
 	ExecuteEndpoint string
-	ExecuteClient   string
 }
 
 // nolint
 func New(config Config) *gateway {
+	token, _ := getAuthToken(config)
+
 	return &gateway{
-		config: config,
+		authToken: token,
+		config:    config,
 	}
 }
 
-func (g *gateway) ExecuteRules(rules []*models.Rule) (*models.RulesAdminResponse, error) {
+func (g *gateway) ExecuteRules(rules []*models.Rule) (*models.RulesEngineResponse, error) {
 	if len(rules) < 1 {
 		return nil, errors.New("no rules provided")
 	}
 
-	token, err := g.getAuthToken()
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := g.executeRules(token, rules)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
-}
-
-func (g *gateway) executeRules(token *models.Token, rules []*models.Rule) (*models.RulesAdminResponse, error) {
 	rulesRequest := g.buildRulesRequest(rules)
-	requestBody, err := json.Marshal(rulesRequest)
+	resp, err := g.executeRulesRequest(rulesRequest)
 	if err != nil {
-		fmt.Printf("Error building rule execution request parameters: %v\n", err)
 		return nil, err
 	}
 
-	client := &http.Client{}
-	r, _ := http.NewRequest("POST", g.config.ExecuteEndpoint, bytes.NewBuffer(requestBody))
-	r.Header.Add("Content-Type", "application/json")
-	r.Header.Add("authorization", "Bearer "+token.Token)
-	resp, err := client.Do(r)
-	if err != nil {
-		fmt.Printf("Error executing rule: %v\n", err)
-		return &models.RulesAdminResponse{}, err
+	if resp.StatusCode == http.StatusUnauthorized {
+		g.refetchToken()
+		resp, err = g.executeRulesRequest(rulesRequest)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	body, err := g.responseBody(resp)
@@ -73,33 +59,36 @@ func (g *gateway) executeRules(token *models.Token, rules []*models.Rule) (*mode
 		return nil, err
 	}
 
-	var rulesResponse models.RulesAdminResponse
+	var rulesResponse models.RulesEngineResponse
 	err = json.Unmarshal([]byte(string(body)), &rulesResponse)
 	if err != nil {
 		fmt.Printf("Error decoding rule execution response: %v\n", err)
-		return &rulesResponse, err
+		return nil, err
 	}
 
 	return &rulesResponse, nil
 }
 
-func (g *gateway) getAuthToken() (*models.Token, error) {
+func getAuthToken(config Config) (*models.Token, error) {
 	data := url.Values{
-		"username":   {g.config.Username},
-		"password":   {g.config.Password},
-		"clientCode": {g.config.AuthClientCode},
+		"username":   {config.Username},
+		"password":   {config.Password},
+		"clientCode": {config.ClientCode},
 	}
 
-	resp, err := http.PostForm(g.config.AuthEndpoint, data)
+	resp, err := http.PostForm(config.AuthEndpoint, data)
 	if err != nil {
 		fmt.Printf("Error fetching token: %v\n", err)
 		return nil, err
 	}
 
-	body, err := g.responseBody(resp)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
+		fmt.Printf("Error reading token response: %v\n", err)
 		return nil, err
 	}
+
+	defer resp.Body.Close()
 
 	var token models.Token
 	err = json.Unmarshal([]byte(string(body)), &token)
@@ -127,14 +116,40 @@ func (g *gateway) getAuthToken() (*models.Token, error) {
 //			}
 //		]
 //	}
-func (g *gateway) buildRulesRequest(rules []*models.Rule) *models.RulesAdminRequest {
-	rulesRequest := &models.RulesAdminRequest{
-		Client: g.config.ExecuteClient,
+func (g *gateway) buildRulesRequest(rules []*models.Rule) *models.RulesEngineRequest {
+	rulesRequest := &models.RulesEngineRequest{
+		Client: g.config.ClientCode,
 		Source: "Camunda",
 		Rules:  rules,
 	}
 
 	return rulesRequest
+}
+
+func (g *gateway) executeRulesRequest(rulesRequest *models.RulesEngineRequest) (*http.Response, error) {
+	token := g.authToken.Token
+	requestBody, err := json.Marshal(rulesRequest)
+	if err != nil {
+		fmt.Printf("Error building rule execution request parameters: %v\n", err)
+		return nil, err
+	}
+
+	client := &http.Client{}
+	r, _ := http.NewRequest("POST", g.config.ExecuteEndpoint, bytes.NewBuffer(requestBody))
+	r.Header.Add("Content-Type", "application/json")
+	r.Header.Add("authorization", "Bearer "+token)
+	resp, err := client.Do(r)
+	if err != nil {
+		fmt.Printf("Error executing rule: %v\n", err)
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (g *gateway) refetchToken() {
+	token, _ := getAuthToken(g.config)
+	g.authToken = token
 }
 
 func (g *gateway) responseBody(resp *http.Response) ([]byte, error) {

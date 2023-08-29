@@ -12,7 +12,7 @@ type RuleExecutor struct {
 }
 
 type rulesEngineGateway interface {
-	ExecuteRules(rules []*models.Rule) (*models.RulesAdminResponse, error)
+	ExecuteRules(rules []*models.Rule) (*models.RulesEngineResponse, error)
 }
 
 func (re *RuleExecutor) ValidateAnniversaryData(data *models.AnniversaryStatement) ([]*models.RuleValidation, error) {

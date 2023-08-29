@@ -16,7 +16,7 @@ func NewMock() *MockGateway {
 
 var MockTestRuleName = "testRule"
 
-func (m *MockGateway) ExecuteRules(rules []*models.Rule) (*models.RulesAdminResponse, error) {
+func (m *MockGateway) ExecuteRules(rules []*models.Rule) (*models.RulesEngineResponse, error) {
 	if len(rules) < 1 {
 		return m.gateway.ExecuteRules(rules)
 	}
@@ -40,7 +40,7 @@ func (m *MockGateway) ExecuteRules(rules []*models.Rule) (*models.RulesAdminResp
 	}
 
 	rulesOutput := []models.Rule{rule}
-	return &models.RulesAdminResponse{
+	return &models.RulesEngineResponse{
 		Client:        "Corro",
 		Source:        "Camunda",
 		CorrelationID: "abc-123",

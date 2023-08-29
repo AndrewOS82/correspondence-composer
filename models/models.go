@@ -20,13 +20,13 @@ type RuleValidation struct {
 	RuleName string
 }
 
-type RulesAdminRequest struct {
+type RulesEngineRequest struct {
 	Client string  `json:"client"`
 	Source string  `json:"source"`
 	Rules  []*Rule `json:"rules"`
 }
 
-type RulesAdminResponse struct {
+type RulesEngineResponse struct {
 	Client        string `json:"client"`
 	Source        string `json:"source"`
 	CorrelationID string `json:"correlationid"`

@@ -29,9 +29,8 @@ func newConfig(env string) Config {
 			Username:        os.Getenv("RULES_ENGINE_USERNAME"),
 			Password:        os.Getenv("RULES_ENGINE_PASSWORD"),
 			AuthEndpoint:    os.Getenv("RULES_ENGINE_AUTH_ENDPOINT"),
-			AuthClientCode:  os.Getenv("RULES_ENGINE_AUTH_CLIENT_CODE"),
+			ClientCode:      os.Getenv("RULES_ENGINE_CLIENT_CODE"),
 			ExecuteEndpoint: os.Getenv("RULES_ENGINE_EXECUTE_ENDPOINT"),
-			ExecuteClient:   os.Getenv("RULES_ENGINE_EXECUTE_CLIENT"),
 		},
 		Kafka: kafkaclient.Config{
 			BootstrapServer:  os.Getenv("KAFKA_BOOTSTRAP_SERVER"),
