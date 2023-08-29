@@ -4,5 +4,5 @@ package schema
 
 // DataServicesLetter ...
 type DataServicesLetter struct {
-	POLICIES *POLICY `xml:"POLICIES"`
+	// POLICIES *POLICY `xml:"POLICIES"`
 }

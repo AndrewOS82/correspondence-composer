@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"correspondence-composer/config"
+	"correspondence-composer/gateways/kafkaclient"
 	rulesgateway "correspondence-composer/gateways/rulesengine"
 	"correspondence-composer/service"
 	"correspondence-composer/usecases"
@@ -27,13 +28,18 @@ func main() {
 		// XmlGenerator: &usecases.XmlGenerator{},
 	}
 
-	// This is a placeholder. The correspondence type will be determined by incoming kafka message.
-	correspondenceType := "anniversary"
+	kafka := kafkaclient.New(config.Kafka)
+	// nolint
+	kafka.Subscribe("correspondence.test.one", func(key string, value string){
+		handleKafkaMessage(key, value, composer)
+	})
+}
 
-	fmt.Println("Running composer process...")
-	err := composer.RunProcess(correspondenceType)
+func handleKafkaMessage(key string, value string, composer service.Composer) {
+	fmt.Printf("Running composer process with value: [%v]\n", value)
+	err := composer.RunProcess(value)
 	if err != nil {
 		fmt.Printf("Error running composer process: %v\n", err)
 	}
-	fmt.Println("Composer finished successfully")
+	fmt.Printf("Composer finished successfully. Completed message: [%v] [%v]\n", key, value)
 }

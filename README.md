@@ -23,7 +23,7 @@ You can run this application in two ways, by installing Go on your machine or vi
 
 `make run`
 
-### Using Docker
+### Using Docker to run the application
 
 If you already have Docker set up and running use the following commands to run the app with Docker:
 
@@ -31,6 +31,20 @@ If you already have Docker set up and running use the following commands to run 
 make docker-build
 make localdev
 ```
+
+## Running Kafka locally with Docker
+
+If you already have Docker set up you can run the following commands to run an instance of Kafka locally with a built in UI that allows you to publish messages with a click of the button.
+
+Run `docker-compose -f kafka.yml up` to start up the instance.
+
+You'll also need to run `echo '127.0.0.1 kafka0' | sudo tee -a /etc/hosts` the first time you spint it up to fix local connectivity.
+
+Visit `localhost:8080` in the browser to see the Kafka UI and set up topics and publish messages.
+
+The current topic in this MVP is "correspondence.test.one" and publishing a message with the value "anniversary" will run the example composer process.
+
+// TODO: add step-by-step instructions on publishing messages to test functionality of the application.
 
 ## Contributing
 
