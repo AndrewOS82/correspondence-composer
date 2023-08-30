@@ -25,10 +25,17 @@ You can run this application in two ways, by installing Go on your machine or vi
 
 ### Using Docker to run the application
 
-If you already have Docker set up and running use the following commands to run the app with Docker:
+If you already have Docker up and running on your machine, use the following commands to run the application.
+
+#### With a Windows machine
 
 ```
-make docker-build
+make.bat localdev
+```
+
+#### With a Mac
+
+```
 make localdev
 ```
 
