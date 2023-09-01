@@ -1,20 +1,11 @@
-REM This file MUST be saved with Carriage Return (CR) + Line Feed (LF) "\r\n" newlines
-
 @ECHO off
-
 setlocal
+
 set GOCMD=go
 set GOBUILD=%GOCMD% build
 set GORUN=%GOCMD% run
 set NAME=correspondence-composer
 set ENTRY_PATH=cmd/%NAME%/main.go
-endlocal
-
-echo GOCMD %GOCMD%
-echo GOBUILD %GOBUILD%
-echo GORUN %GORUN%
-echo NAME %NAME%
-echo ENTRY_PATH %ENTRY_PATH%
 
 IF %1.==. GOTO NoArgs
 
@@ -28,12 +19,20 @@ GOTO %1
 	%GOBUILD% -o bin/%NAME% -i %ENTRY_PATH%
   GOTO End
 
+:kafka-start
+	docker-compose -f kafka.yml up -d
+  GOTO End
+
+:kafka-stop
+	docker-compose -f kafka.yml down -d
+  GOTO End
+
 :docker-build
 	docker-compose -f docker-compose-local.yml build correspondence-composer
   GOTO End
 
-:localdev
-	docker-compose -f docker-compose-local.yml up %SERVICE%
+:docker-run
+	docker-compose -f docker-compose-local.yml up
   GOTO End
 
 :test
@@ -58,3 +57,5 @@ GOTO %1
 
 :End
   ECHO Exiting
+
+endlocal

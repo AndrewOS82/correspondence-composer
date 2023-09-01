@@ -18,11 +18,17 @@ build:
 build-linux:
 	 env GOOS=linux $(GOBUILD) -o bin/$(NAME) -i $(ENTRY_PATH)
 
+kafka-start:
+	docker-compose -f kafka.yml up -d
+
+kafka-stop:
+	docker-compose -f kafka.yml down -d
+
 docker-build:
 	docker-compose -f docker-compose-local.yml build correspondence-composer
 
-localdev:
-	docker-compose -f docker-compose-local.yml up $(SERVICE)
+docker-run:
+	docker-compose -f docker-compose-local.yml up
 
 test:
 	$(GOCMD) test -v ./... -p 1

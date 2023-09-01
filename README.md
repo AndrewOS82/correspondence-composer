@@ -30,26 +30,30 @@ If you already have Docker up and running on your machine, use the following com
 #### With a Windows machine
 
 ```
-make.bat localdev
+make.bat kafka-start
+make.bat docker-build
+make.bat docker-run
 ```
 
 #### With a Mac
 
 ```
-make localdev
+make kafka-start
+make docker-build
+make docker-run
 ```
 
 ## Running Kafka locally with Docker
 
 If you already have Docker set up you can run the following commands to run an instance of Kafka locally with a built in UI that allows you to publish messages with a click of the button.
 
-Run `docker-compose -f kafka.yml up` to start up the instance.
-
-You'll also need to run `echo '127.0.0.1 kafka0' | sudo tee -a /etc/hosts` the first time you spint it up to fix local connectivity.
+Run `make kafka-start` to start up the instance (`make.bat kafka-start` for Windows users).
 
 Visit `localhost:8080` in the browser to see the Kafka UI and set up topics and publish messages.
 
 The current topic in this MVP is "correspondence.test.one" and publishing a message with the value "anniversary" will run the example composer process.
+
+To stop the instance, run `make kafka-stop` (`make.bat kafka-stop` for Windows users).
 
 // TODO: add step-by-step instructions on publishing messages to test functionality of the application.
 

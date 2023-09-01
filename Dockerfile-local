@@ -1,6 +1,11 @@
 FROM golang:1.21-alpine
 
-RUN apk add ca-certificates git make
+RUN apk update
+RUN apk -U upgrade 
+RUN apk add ca-certificates git make 
+RUN apk add librdkafka-dev pkgconf gcc musl-dev
+
+ENV CGO_ENABLED=1 GOOS=linux 
 
 WORKDIR /go/src/app
 COPY go.mod go.sum ./
@@ -10,4 +15,4 @@ COPY . .
 # Enables hot reloading
 # Depends on the application code being mounted as a volume
 RUN go install github.com/githubnemo/CompileDaemon@latest
-ENTRYPOINT CompileDaemon --build="go build -o bin/correspondence-composer cmd/correspondence-composer/main.go" --command="./bin/correspondence-composer"
+ENTRYPOINT CompileDaemon --build="go build -tags dynamic -tags musl -o bin/correspondence-composer cmd/correspondence-composer/main.go" --command="go run -tags musl cmd/correspondence-composer/main.go"
