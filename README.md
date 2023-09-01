@@ -27,6 +27,8 @@ You can run this application in two ways, by installing Go on your machine or vi
 
 If you already have Docker up and running on your machine, use the following commands to run the application.
 
+Update your .env file with: `KAFKA_BOOTSTRAP_SERVER=host.docker.internal:9093`.
+
 #### With a Windows machine
 
 ```

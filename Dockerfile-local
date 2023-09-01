@@ -15,4 +15,4 @@ COPY . .
 # Enables hot reloading
 # Depends on the application code being mounted as a volume
 RUN go install github.com/githubnemo/CompileDaemon@latest
-ENTRYPOINT CompileDaemon --build="go build -tags dynamic -tags musl -o bin/correspondence-composer cmd/correspondence-composer/main.go" --command="go run -tags musl cmd/correspondence-composer/main.go"
+ENTRYPOINT CompileDaemon --build="go build -tags dynamic -tags musl -o bin/correspondence-composer cmd/correspondence-composer/main.go" --command="go run -tags musl cmd/correspondence-composer/main.go" -polling -polling-interval=3000
