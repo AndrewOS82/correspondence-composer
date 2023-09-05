@@ -17,6 +17,16 @@ A sample env file has been provided as `.env.sample`. To run the app locally, yo
 
 To make successful requests to the rules engine you'll need to have valid credentials for the environment that the endpoints are hitting.
 
+#### Setting up your AWS credentials locally
+
+We should be storing AWS profiles/credentials in your `/.aws/credentials` file. If you haven't already, ask for the AWS credentials and create the file and add the following:
+
+```
+[default]
+aws_access_key_id = <DEV ACCESS KEY>
+aws_secret_access_key = <DEV SECRET ACCESS KEY>
+```
+
 ## Run Instructions
 
 You can run this application in two ways, by installing Go on your machine or via Docker. If you've installed Go on your machine start up app with this command:

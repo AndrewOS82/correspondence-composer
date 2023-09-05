@@ -7,6 +7,11 @@ import (
 type Composer struct {
 	DataFetcher  dataFetcher
 	RuleExecutor ruleExecutor
+	Uploader     uploader
+}
+
+type uploader interface {
+	Upload(filepath string, key string) error
 }
 
 type dataFetcher interface {
@@ -36,6 +41,16 @@ func (c *Composer) RunProcess(correspondenceType string) error {
 			// Produce kafka status message with details on which rules failed.
 			return nil
 		}
+
+		// write & save file w/ anniversaryData snapshot regardless of XML creation
+		filename := "test.json"
+		key := "anniversary-data/<policyNumber>-<timestamp>"
+		uploadErr := c.Uploader.Upload(filename, key)
+		if err != nil {
+			// handle
+			return uploadErr
+		}
+
 		// If all the rules pass, we proceed to building XML for that correspondence type
 		// c.XmlGenerator.GenerateXml(anniversaryData)
 

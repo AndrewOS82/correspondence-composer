@@ -5,6 +5,7 @@ import (
 
 	"correspondence-composer/gateways/kafkaclient"
 	"correspondence-composer/gateways/rulesengine"
+	"correspondence-composer/gateways/s3client"
 	"correspondence-composer/utils/log"
 )
 
@@ -12,6 +13,7 @@ type Config struct {
 	Env         string
 	RulesEngine rulesengine.Config
 	Kafka       kafkaclient.Config
+	S3          s3client.Config
 }
 
 func GetConfig(logger log.Logger) Config {
@@ -25,6 +27,10 @@ func GetConfig(logger log.Logger) Config {
 func newConfig(env string) Config {
 	return Config{
 		Env: env,
+		S3: s3client.Config{
+			AWSRegion: os.Getenv("AWS_REGION"),
+			AWSBucket: os.Getenv("AWS_BUCKET"),
+		},
 		RulesEngine: rulesengine.Config{
 			Username:        os.Getenv("RULES_ENGINE_USERNAME"),
 			Password:        os.Getenv("RULES_ENGINE_PASSWORD"),
