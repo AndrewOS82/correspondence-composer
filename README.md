@@ -5,6 +5,7 @@
 
 This is an application which listens for incoming events indicating that correspondence should be generated for a client. It fetches relevant data for the correspondence from Zinnia enterprise APIs and then generates XML that can be consumed by other services which prepare and send the correspondence.
 
+
 ## Setup
 
 ### Installing Go on your machine
@@ -14,6 +15,8 @@ Follow [these instructions](https://go.dev/doc/install) for installing go on Lin
 ### Setting up configs and credentials
 
 A sample env file has been provided as `.env.sample`. To run the app locally, you'll need to copy this into a `.env` file and update username, password and endpoints as necessary.
+
+#### Rules Engine
 
 To make successful requests to the rules engine you'll need to have valid credentials for the environment that the endpoints are hitting.
 
@@ -26,6 +29,17 @@ We should be storing AWS profiles/credentials in your `/.aws/credentials` file. 
 aws_access_key_id = <DEV ACCESS KEY>
 aws_secret_access_key = <DEV SECRET ACCESS KEY>
 ```
+
+#### Enterprise API
+
+TODO: update these instructions with the proper application auth strategy once that has been established.
+
+For now, the app relies on a POLICY_API_TOKEN that should be added to the .env file. You can set this value to "fake" to return some mock data that is hardcoded in `/gateways/policyapi/mock_policy_data.go`.
+
+To fetch a real auth token you will need credentials for an account in the developer portal https://developers.zinnia.io/ and to follow the instructions outlined here:
+
+https://se2sordev.atlassian.net/wiki/spaces/SCZ/pages/3617456208/Developer+API+Portal+Postman+Requests
+
 
 ## Run Instructions
 
@@ -63,11 +77,16 @@ Run `make kafka-start` to start up the instance (`make.bat kafka-start` for Wind
 
 Visit `localhost:8080` in the browser to see the Kafka UI and set up topics and publish messages.
 
-The current topic in this MVP is "correspondence.test.one" and publishing a message with the value "anniversary" will run the example composer process.
+The current topic in this MVP is "correspondence.test.one" and publishing a message with any key value will run the example composer process.
+
+For a real end-to-end test fetching policy data from the enterprise API, set the value to a valid policy number for the environment you are working in. You can find a valid policy number by hitting the enterprise API policy search endpoint (/policy/v1/policies/search) with no search params (an empty request body {} will work).
+
+Follow these instructions for setting up the enterprise API client in Postman: https://se2sordev.atlassian.net/wiki/spaces/SCZ/pages/3617456208/Developer+API+Portal+Postman+Requests
 
 To stop the instance, run `make kafka-stop` (`make.bat kafka-stop` for Windows users).
 
-// TODO: add step-by-step instructions on publishing messages to test functionality of the application.
+// TODO: add step-by-step instructions on publishing messages to test functionality of the application once we know what real messages might be coming in.
+
 
 ## Contributing
 
@@ -97,3 +116,10 @@ Then to generate (or regenerate) Go types from an xsd file run the following com
 `make generate-xsd-types xsd=<XsdFileName> output=<output_file_name>`
 
 This command will read the xsd file saved as `<XsdFileName>` in the xsds directory and output Go types in a file named `<output_file_name>` in the `models/generated` directory.
+
+
+## Generating enterprise API clients
+
+The policy enterprise API client was generated with the github.com/deepmap/oapi-codegen/cmd/oapi-codegen package by downloading the openapi spec from our developer portal https://developers.zinnia.io/ to a file called `openapi.json` and running this command:
+
+`oapi-codegen -package openapi.json > policyapi.gen.go`

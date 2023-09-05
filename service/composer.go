@@ -1,6 +1,9 @@
 package service
 
 import (
+	"context"
+	"fmt"
+
 	"correspondence-composer/models"
 )
 
@@ -15,19 +18,20 @@ type uploader interface {
 }
 
 type dataFetcher interface {
-	FetchAnniversaryData() (*models.AnniversaryStatement, error)
+	FetchAnniversaryData(ctx context.Context, policyNumber string) (*models.AnniversaryStatement, error)
 }
 
 type ruleExecutor interface {
 	ValidateAnniversaryData(data *models.AnniversaryStatement) ([]*models.RuleValidation, error)
 }
 
-func (c *Composer) RunProcess(correspondenceType string) error {
-	switch correspondenceType {
+func (c *Composer) RunProcess(ctx context.Context, event *models.KafkaEvent) error {
+	switch event.Name {
 	case "anniversary":
-		anniversaryData, err := c.DataFetcher.FetchAnniversaryData()
+		policy := event.PolicyData
+		anniversaryData, err := c.DataFetcher.FetchAnniversaryData(ctx, policy.PolicyNumber)
 		if err != nil {
-			// handle
+			fmt.Printf("Error %v\n", err)
 			return err
 		}
 

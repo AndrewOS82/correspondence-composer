@@ -28,7 +28,7 @@ func (re *RuleExecutor) ValidateAnniversaryData(data *models.AnniversaryStatemen
 		// There is a lot of flexibility in the rules engine around what output is returned when a rule is run.
 		// It seems like the pattern for DMN is: if match, return something, otherwise return nothing.
 		// This is a placeholder for now based on that assumption.
-		if len(result.Output[0]) < 1 {
+		if len(result.Output) > 1 && len(result.Output[0]) < 1 {
 			validation := &models.RuleValidation{
 				RuleName: result.RuleName,
 				Success:  false,
@@ -51,9 +51,9 @@ func (re *RuleExecutor) ValidatePolicyData(data *models.Policy) ([]models.Rule, 
 	// This is a random rule and input for demonstration purposes. We'll need to decide on a strategy
 	// for selecting the appropriate rules to validate policy data once they have been created.
 	rule := &models.Rule{
-		RuleName: "testRule",
+		RuleName: "ProductEligibilityVerification",
 		Version:  1,
-		Input:    map[string]interface{}{"planCode": data.PlanCode},
+		Input:    map[string]interface{}{"planName": data.PlanCode},
 	}
 	rules := []*models.Rule{rule}
 
