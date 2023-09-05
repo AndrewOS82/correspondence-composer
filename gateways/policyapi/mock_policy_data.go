@@ -17,7 +17,7 @@ func (g *gateway) returnMockSuccess() *models.GetPolicyResponseBody {
 			LineOfBusiness:    "LIFE",
 			IssueDate:         "2023-06-14",
 			IssueState:        "VT",
-			PolicyYear:        "1",
+			PolicyYear:        1,
 			ProductType:       "UNIVERSALLIFE",
 		},
 	}

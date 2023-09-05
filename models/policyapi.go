@@ -10,7 +10,7 @@ type Policy struct {
 	LineOfBusiness    string `json:"lineOfBusiness,omitempty"`
 	IssueDate         string `json:"issueDate,omitempty"`
 	IssueState        string `json:"issueState,omitempty"`
-	PolicyYear        string `json:"policyYear,omitempty"`
+	PolicyYear        int    `json:"policyYear,omitempty"`
 	ProductType       string `json:"productType,omitempty"`
 }
 

@@ -95,7 +95,7 @@ func (xb *XMLBuilder) BuildDataServicesLetter(statement *models.AnniversaryState
 		POLPRDCTMKTGNAME: statement.Policy.MarketingName,
 		POLISSUEDATE:     statement.Policy.IssueDate,
 		POLISSUESTATE:    statement.Policy.IssueState,
-		POLCURRYR:        statement.Policy.PolicyYear,
+		POLCURRYR:        "",
 		// TODO: Pull below from reftable
 		POLSYSCODE:         "",
 		POLDTHBNFTGAURAGE:  "",
