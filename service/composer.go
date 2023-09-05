@@ -11,6 +11,7 @@ type Composer struct {
 	DataFetcher  dataFetcher
 	RuleExecutor ruleExecutor
 	Uploader     uploader
+	XMLBuilder   xmlBuilder
 }
 
 type uploader interface {
@@ -23,6 +24,10 @@ type dataFetcher interface {
 
 type ruleExecutor interface {
 	ValidateAnniversaryData(data *models.AnniversaryStatement) ([]*models.RuleValidation, error)
+}
+
+type xmlBuilder interface {
+	BuildDataServicesLetter(statement *models.AnniversaryStatement) (string, error)
 }
 
 func (c *Composer) RunProcess(ctx context.Context, event *models.KafkaEvent) error {
@@ -56,7 +61,19 @@ func (c *Composer) RunProcess(ctx context.Context, event *models.KafkaEvent) err
 		}
 
 		// If all the rules pass, we proceed to building XML for that correspondence type
-		// c.XmlGenerator.GenerateXml(anniversaryData)
+
+		preparedXML, err := c.XMLBuilder.BuildDataServicesLetter(anniversaryData)
+
+		if err != nil {
+			fmt.Printf("Error %v\n", err)
+			return err
+		}
+
+		fmt.Printf("Prepared XML %v\n", preparedXML)
+
+		// Once we build the xml, we ensure it is valid
+
+		// Once we ensure it is valid, we send it to CDS
 
 		return nil
 	}

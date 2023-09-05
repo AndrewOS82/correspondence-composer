@@ -1,11 +1,17 @@
 package models
 
 type Policy struct {
-	PlanCode      string
-	PolicyNumber  string
-	PolicyStatus  string
-	PlanName      string
-	MarketingName string
+	PlanCode          string `json:"planCode,omitempty"`
+	PolicyNumber      string `json:"policyNumber,omitempty"`
+	PolicyStatus      string `json:"policyStatus,omitempty"`
+	PlanName          string `json:"planName,omitempty"`
+	MarketingName     string `json:"marketingName,omitempty"`
+	QualificationType string `json:"qualificationType,omitempty"`
+	LineOfBusiness    string `json:"lineOfBusiness,omitempty"`
+	IssueDate         string `json:"issueDate,omitempty"`
+	IssueState        string `json:"issueState,omitempty"`
+	PolicyYear        string `json:"policyYear,omitempty"`
+	ProductType       string `json:"productType,omitempty"`
 }
 
 type GetPolicyResponseBody struct {

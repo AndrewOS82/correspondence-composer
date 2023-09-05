@@ -56,12 +56,12 @@ func main() {
 		Uploader: &usecases.Uploader{
 			StorageClient: storageclient,
 		},
-		// XmlGenerator: &usecases.XmlGenerator{},
+		XMLBuilder: &usecases.XMLBuilder{},
 	}
 
 	kafka := kafkaclient.New(config.Kafka)
 	// nolint
-	kafka.Subscribe("correspondence.test.one", func(key string, value string){
+	kafka.Subscribe("correspondence.test.one", func(key string, value string) {
 		handleKafkaMessage(ctx, key, value, composer)
 	})
 
@@ -81,6 +81,7 @@ func handleKafkaMessage(ctx context.Context, messageKey string, messageValue str
 		fmt.Printf("Composer process failed. Error: %v\n", err)
 		return
 	}
+
 	fmt.Printf("Composer finished successfully. Completed message: [%v] [%v]\n", messageKey, messageValue)
 }
 
