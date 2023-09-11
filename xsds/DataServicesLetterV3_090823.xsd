@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:simpleType name="AlphanumericString">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[a-zA-Z0-9]"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Email">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[^@]+@[^\.]+\..+"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:complexType name="CARRIER">
+        <xsd:sequence>
+            <xsd:element name="CARRIER_CONT" type="AlphanumericString"/>
+            <xsd:element name="CARRIER_ID" type="AlphanumericString"/>
+            <xsd:element name="CARRIER_DISPLAY_NAME" type="xsd:string"/>
+            <xsd:element name="CARRIER_BUSINESS_NAME" type="xsd:string"/>
+            <xsd:element name="CARRIER_ADDR_LINE1" type="AlphanumericString"/>
+            <xsd:element name="CARRIER_ADDR_LINE2" type="AlphanumericString"/>
+            <xsd:element name="CARRIER_ADDR_LINE3" type="AlphanumericString"/>
+            <xsd:element name="CARRIER_CITY" type="xsd:string"/>
+            <xsd:element name="CARRIER_STATE" type="xsd:string"/>
+            <xsd:element name="CARRIER_ZIP" type="xsd:nonNegativeInteger"/>
+            <xsd:element name="CARRIER_ADDR_COUNTRY_CODE" type="xsd:string"/>
+            <xsd:element name="CARRIER_ADDR_TYPE" type="xsd:string"/>
+            <xsd:element name="CARRIER_ADDR_STATUS" type="xsd:anyURI"/>
+            <xsd:element name="CARRIER_PHN_NUM" type="AlphanumericString"/>
+            <xsd:element name="CARRIER_PHN_TYPE" type="xsd:string"/>
+            <xsd:element name="CARRIER_EMAIL_ADDR" type="Email"/>
+            <xsd:element name="CARRIER_EMAIL_TYPE" type="xsd:string"/>
+            <xsd:element name="CARRIER_WEB_LINK_URL" type="xsd:anyURI"/>
+            <xsd:element name="CARRIER_WEB_LINK_TYPE" type="xsd:string"/>
+            <xsd:element name="CARRIER_OFFICE_HOURS" type="AlphanumericString"/>
+            <xsd:element name="CARRIER_OFFICE_DAYS" type="xsd:string"/>
+            <!--            CONFIRM TYPE CARRIER_BUDGET_CNTR-->
+            <xsd:element name="CARRIER_BUDGET_CNTR" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="POLICY">
+        <xsd:sequence>
+            <!--            CONFIRM TYPE REC_TYPE -->
+            <xsd:element name="REC_TYPE" type="xsd:string"/>
+            <xsd:element name="POL_CONT" type="xsd:string"/>
+            <xsd:element name="POL_PLAN_CODE" type="xsd:string"/>
+            <xsd:element name="POL_PRODUCT" type="xsd:string"/>
+            <xsd:element name="POL_QUAL_TYPE" type="xsd:string"/>
+            <xsd:element name="POL_PLAN_TYPE" type="xsd:string"/>
+            <xsd:element name="POL_PROD_SHORT_NAME" type="xsd:string"/>
+            <xsd:element name="POL_PRDCT_MKTG_NAME" type="xsd:string"/>
+            <xsd:element name="POL_CYCLE_DATE" type="xsd:date"/>
+            <xsd:element name="POL_SERVICE_NAME" type="xsd:string"/>
+            <xsd:element name="POL_SERVICE_DESC" type="xsd:string"/>
+            <xsd:element name="POL_STATUS" type="xsd:string"/>
+            <xsd:element name="POL_LOB" type="xsd:string"/>
+            <xsd:element name="POL_PRCSG_COMP" type="xsd:string"/>
+            <xsd:element name="POL_DOC_TYPE" type="xsd:string"/>
+            <xsd:element name="POL_PRDCT_COMP" type="xsd:string"/>
+            <xsd:element name="POL_ISSUE_DATE" type="xsd:date"/>
+            <xsd:element name="POL_ISSUE_STATE" type="xsd:string"/>
+            <xsd:element name="POL_CURR_YR" type="xsd:positiveInteger"/>
+            <xsd:element name="POL_SYS_CODE" type="xsd:string"/>
+            <xsd:element name="POL_PRODUCT_TYPE" type="xsd:string"/>
+            <xsd:element name="POL_START_DATE" type="xsd:date"/>
+            <xsd:element name="POL_MATURITY_DATE" type="xsd:date"/>
+            <xsd:element name="POL_TERM_DATE" type="xsd:date"/>
+            <xsd:element name="POL_RESIDENCE_STATE" type="xsd:string"/>
+            <xsd:element name="POL_TERM" type="xsd:positiveInteger"/>
+            <!--            CONFIRM TYPE POL_PREM_AMT -->
+            <xsd:element name="POL_PREM_AMT" type="xsd:decimal"/>
+            <xsd:element name="POL_PREM_MODE" type="xsd:string"/>
+            <xsd:element name="POL_RISK_CLASS" type="xsd:string"/>
+            <xsd:element name="POL_EFFECTIVE_DATE" type="xsd:date"/>
+            <xsd:element name="POL_ISSUE_AGE" type="xsd:positiveInteger"/>
+            <xsd:element name="POL_START_ANNIV_DATE" type="xsd:date"/>
+            <xsd:element name="POL_CURR_ANNIV_END_DATE" type="xsd:date"/>
+            <xsd:element name="POL_LAST_ANNIV_DATE" type="xsd:date"/>
+            <xsd:element name="POL_CURR_ANNIV_DATE" type="xsd:date"/>
+            <xsd:element name="POL_NEXT_ANNIV_END_DATE" type="xsd:date"/>
+            <xsd:element name="POL_FACE_VALUE" type="xsd:positiveInteger"/>
+            <xsd:element name="POL_SOURCE" type="xsd:string"/>
+
+            <xsd:element name="PARTYINFORMATION" type="PARTY" minOccurs="1"/>
+            <xsd:element name="POLICYVALUES" type="POLICY_VALUE" />
+            <xsd:element name="CARRIERINFORMATION" type="CARRIER" />
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="PARTY">
+        <xsd:sequence>
+            <xsd:element name="PARTY_CONT" type="AlphanumericString"/>
+            <xsd:element name="PARTY_ID" type="AlphanumericString"/>
+            <xsd:element name="PARTY_ROLE_ID" type="xsd:nonNegativeInteger"/>
+            <xsd:element name="PARTY_TYPE" type="xsd:string"/>
+            <xsd:element name="PARTY_ROLE_NAME" type="xsd:string"/>
+            <xsd:element name="PARTY_REL_TO_INS" type="xsd:string"/>
+            <xsd:element name="PARTY_PCT" type="xsd:nonNegativeInteger"/>
+            <xsd:element name="PARTY_FULL_NAME" type="xsd:string"/>
+            <xsd:element name="PARTY_PREFIX" type="xsd:string"/>
+            <xsd:element name="PARTY_FST_NAME" type="xsd:string"/>
+            <xsd:element name="PARTY_MI" type="xsd:string"/>
+            <xsd:element name="PARTY_LST_NAME" type="xsd:string"/>
+            <xsd:element name="PARTY_SUFFIX" type="xsd:string"/>
+            <xsd:element name="ADDR_LINE1" type="AlphanumericString"/>
+            <xsd:element name="ADDR_LINE2" type="AlphanumericString"/>
+            <xsd:element name="ADDR_LINE3" type="AlphanumericString"/>
+            <xsd:element name="ADDR_CITY" type="xsd:string"/>
+            <xsd:element name="ADDR_STATE" type="xsd:string"/>
+            <xsd:element name="ADDR_ZIP" type="xsd:string"/>
+            <xsd:element name="ADDR_CNTRY_CODE" type="xsd:string"/>
+            <xsd:element name="ADDR_TYPE" type="xsd:string"/>
+            <xsd:element name="ADDR_STATUS" type="xsd:string"/>
+            <!--            CONFIRM TYPE ADDR_PREF_IND-->
+            <xsd:element name="ADDR_PREF_IND" type="xsd:string"/>
+            <xsd:element name="PARTY_DOB" type="xsd:date"/>
+            <xsd:element name="PARTY_ATTAIN_AGE" type="xsd:nonNegativeInteger"/>
+            <xsd:element name="PARTY_GENDER" type="xsd:string"/>
+            <xsd:element name="EMAIL_ADDR" type="Email"/>
+            <xsd:element name="EMAIL_TYPE" type="xsd:string"/>
+            <xsd:element name="PHN_NUM" type="AlphanumericString"/>
+            <xsd:element name="PHN_TYPE" type="xsd:string"/>
+            <!--            CONFIRM TYPE PREFFERRED-->
+            <xsd:element name="PREFERRED" type="xsd:string"/>
+            <xsd:element name="PARTY_DELIVERY_FLAG" type="xsd:string"/>
+            <xsd:element name="PARTY_DELIVERY_DESC" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="POLICYVALUE">
+        <xsd:sequence>
+            <!--            CONFIRM TYPE PVAL_CONT-->
+            <xsd:element name="PVAL_CONT" type="xsd:string"/>
+            <xsd:element name="PVAL_BEGIN_DATE" type="xsd:date"/>
+            <xsd:element name="PVAL_END_DATE" type="xsd:date"/>
+            <!--            CONFIRM TYPES BELOW (assuming ints for all _VAL)-->
+            <xsd:element name="PVAL_BEGIN_COVER_VAL" type="xsd:decimal"/>
+            <xsd:element name="PVAL_END_COVER_VAL" type="xsd:decimal"/>
+            <xsd:element name="PVAL_CHG_COVER_VAL" type="xsd:decimal"/>
+
+            <xsd:element name="PVAL_BEGIN_DEATH_BNFT_VAL" type="xsd:decimal"/>
+            <xsd:element name="PVAL_END_DEATH_BNFT_VAL" type="xsd:decimal"/>
+            <xsd:element name="PVAL_CHG_DEATH_BNFT_VAL" type="xsd:decimal"/>
+
+            <xsd:element name="PVAL_BEGIN_SURR_VAL" type="xsd:decimal"/>
+            <xsd:element name="PVAL_END_SURR_VAL" type="xsd:decimal"/>
+            <xsd:element name="PVAL_CHG_SURR_VAL" type="xsd:decimal"/>
+
+            <xsd:element name="PVAL_BEGIN_ACCT_VAL" type="xsd:decimal"/>
+            <xsd:element name="PVAL_END_ACCT_VAL" type="xsd:decimal"/>
+            <xsd:element name="PVAL_CHG_ACCT_VAL" type="xsd:decimal"/>
+
+            <xsd:element name="PVAL_TOTAL_PAY_RCVD" type="xsd:decimal"/>
+            <xsd:element name="PVAL_TOTAL_COI_COST" type="xsd:decimal"/>
+            <xsd:element name="PVAL_COST_OF_INS_VAL" type="xsd:decimal"/>
+            <xsd:element name="PVAL_TOTAL_UNIT_CHARGE" type="xsd:decimal"/>
+            <xsd:element name="PVAL_TOTAL_EXPENSE_CHARGE" type="xsd:decimal"/>
+            <xsd:element name="PVAL_TOTAL_PART_WITHDRAW_VAL" type="xsd:decimal"/>
+            <xsd:element name="PVAL_TOTAL_LOAN_AMT" type="xsd:decimal"/>
+            <xsd:element name="PVAL_TOTAL_LOAN_BALN_AMT" type="xsd:decimal"/>
+            <xsd:element name="PVAL_TOTAL_LOAN_REPAY_AMT" type="xsd:decimal"/>
+            <xsd:element name="PVAL_TOTAL_INT_CHARGE" type="xsd:decimal"/>
+            <xsd:element name="PVAL_TOTAL_INT_CREDIT" type="xsd:decimal"/>
+            <xsd:element name="PVAL_INT_CREDIT_CURR_RATE" type="xsd:nonNegativeInteger"/>
+            <xsd:element name="PVAL_LOAN_INT_CURR_RATE" type="xsd:nonNegativeInteger"/>
+            <xsd:element name="PVAL_LOAN_CREDIT_CURR_RATE" type="xsd:nonNegativeInteger"/>
+            <xsd:element name="PVAL_INT_CREDIT_NEXT_YR_RATE" type="xsd:nonNegativeInteger"/>
+            <xsd:element name="PVAL_LOAN_INT_NEXT_YR_RATE" type="xsd:nonNegativeInteger"/>
+            <xsd:element name="PVAL_LOAN_CREDIT_NEXT_YR_RATE" type="xsd:nonNegativeInteger"/>
+
+            <xsd:element name="PVAL_CURR_PAY_AMT" type="xsd:decimal"/>
+            <xsd:element name="PVAL_CURR_PAY_MODE" type="xsd:string"/>
+            <xsd:element name="PVAL_ANN_LPS_AMT" type="xsd:decimal"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="DataServicesLetter">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="POLICIES">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="POLICY" minOccurs="1" maxOccurs="unbounded" />
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+</xsd:schema>
