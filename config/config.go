@@ -10,12 +10,13 @@ import (
 )
 
 type Config struct {
-	Env                string
-	Kafka              kafkaclient.Config
-	PolicyAPIAuthToken string
-	PolicyAPIBaseURL   string
-	RulesEngine        rulesengine.Config
-	S3                 s3client.Config
+	Env                  string
+	Kafka                kafkaclient.Config
+	PolicyAPIAuthToken   string
+	PolicyAPIBaseURL     string
+	PolicyDataSampleFile string
+	RulesEngine          rulesengine.Config
+	S3                   s3client.Config
 }
 
 func GetConfig(logger log.Logger) Config {
@@ -48,7 +49,8 @@ func newConfig(env string) Config {
 			SASLUsername:     os.Getenv("KAFKA_SASL_USERNAME"),
 			SASLPassword:     os.Getenv("KAFKA_SASL_PASSWORD"),
 		},
-		PolicyAPIAuthToken: os.Getenv("POLICY_API_TOKEN"),
-		PolicyAPIBaseURL:   os.Getenv("ENTERPRISE_API_BASE_URL"),
+		PolicyDataSampleFile: getEnvOrDefault("POLICY_DATA_SAMPLE_FILE", "./gateways/policyapi/sample_policy_data.json"),
+		PolicyAPIAuthToken:   os.Getenv("POLICY_API_TOKEN"),
+		PolicyAPIBaseURL:     os.Getenv("ENTERPRISE_API_BASE_URL"),
 	}
 }

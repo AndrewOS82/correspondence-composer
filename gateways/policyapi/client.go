@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 
 	"correspondence-composer/models"
 )
@@ -22,12 +23,14 @@ type ClientWrapper interface {
 type gateway struct {
 	authToken       string
 	policyAPIclient ClientWrapper
+	mockPolicyData  *models.GetPolicyResponseBody
 }
 
 // nolint
-func New(client *ClientWithResponses, authToken string) *gateway {
+func New(client *ClientWithResponses, authToken string, mockPolicyData *models.GetPolicyResponseBody) *gateway {
 	return &gateway{
 		authToken: authToken,
+		mockPolicyData: mockPolicyData,
 		policyAPIclient: &clientWrapper{
 			client: client,
 		},
@@ -60,4 +63,21 @@ func (g *gateway) FetchPolicyData(ctx context.Context, policyNumber string) (*mo
 	}
 
 	return &parsedResp, nil
+}
+
+func (g *gateway) returnMockSuccess() *models.GetPolicyResponseBody {
+	return g.mockPolicyData
+}
+
+func GetMockPolicyData(configFile string) (*models.GetPolicyResponseBody, error) {
+	var policyResponse *models.GetPolicyResponseBody
+	content, err := os.ReadFile(configFile)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(content, &policyResponse)
+	if err != nil {
+		return nil, err
+	}
+	return policyResponse, nil
 }

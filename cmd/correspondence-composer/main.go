@@ -38,7 +38,13 @@ func main() {
 		})
 		return
 	}
-	policyAPIGateway := policyapi.New(policyAPIClient, config.PolicyAPIAuthToken)
+	mockPolicyData, err := policyapi.GetMockPolicyData(config.PolicyDataSampleFile)
+	if err != nil {
+		logger.ErrorWithFields(err, log.Fields{
+			"msg": "error loading mock policy data",
+		})
+	}
+	policyAPIGateway := policyapi.New(policyAPIClient, config.PolicyAPIAuthToken, mockPolicyData)
 
 	rulesEngineGateway := rulesgateway.New(config.RulesEngine)
 
