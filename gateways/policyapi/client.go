@@ -10,9 +10,9 @@ import (
 	"correspondence-composer/models"
 )
 
-const (
-	NotFound     = "policy not found"
-	Unauthorized = "unauthorized"
+var (
+	ErrNotFound     = errors.New("policy not found")
+	ErrUnauthorized = errors.New("unauthorized")
 )
 
 // a simplified wrapper interface is provided for convenience of testing/mocking
@@ -57,9 +57,9 @@ func (g *gateway) FetchPolicyData(ctx context.Context, policyNumber string) (*mo
 	statusCode := resp.HTTPResponse.StatusCode
 	switch statusCode {
 	case 401:
-		return &parsedResp, errors.New(Unauthorized)
+		return &parsedResp, ErrUnauthorized
 	case 404:
-		return &parsedResp, errors.New(NotFound)
+		return &parsedResp, ErrNotFound
 	}
 
 	return &parsedResp, nil

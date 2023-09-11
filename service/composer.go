@@ -5,9 +5,11 @@ import (
 	"fmt"
 
 	"correspondence-composer/models"
+	"correspondence-composer/utils/log"
 )
 
 type Composer struct {
+	Logger       log.Logger
 	DataFetcher  dataFetcher
 	RuleExecutor ruleExecutor
 	Uploader     uploader
@@ -23,7 +25,7 @@ type dataFetcher interface {
 }
 
 type ruleExecutor interface {
-	ValidateAnniversaryData(data *models.AnniversaryStatement) ([]*models.RuleValidation, error)
+	ValidateAnniversaryData(ctx context.Context, data *models.AnniversaryStatement) ([]*models.RuleValidation, error)
 }
 
 type xmlBuilder interface {
@@ -36,16 +38,23 @@ func (c *Composer) RunProcess(ctx context.Context, event *models.KafkaEvent) err
 		policy := event.PolicyData
 		anniversaryData, err := c.DataFetcher.FetchAnniversaryData(ctx, policy.PolicyNumber)
 		if err != nil {
-			fmt.Printf("Error %v\n", err)
+			c.Logger.ErrorWithFields(err, log.Fields{
+				"policyNumber": policy.PolicyNumber,
+			})
 			return err
 		}
 
-		validationFailures, err := c.RuleExecutor.ValidateAnniversaryData(anniversaryData)
+		validationFailures, err := c.RuleExecutor.ValidateAnniversaryData(ctx, anniversaryData)
 		if err != nil {
-			// handle
+			c.Logger.ErrorWithFields(err, log.Fields{
+				"policyNumber": policy.PolicyNumber,
+			})
 			return err
 		}
 		if len(validationFailures) > 0 {
+			c.Logger.InfoWithFields("Validations failed - no XML generated", log.Fields{
+				"failedRule": validationFailures[0].RuleName,
+			})
 			// Save data in S3 and the reason why data is not valid and XML can't be generated
 			// Produce kafka status message with details on which rules failed.
 			return nil

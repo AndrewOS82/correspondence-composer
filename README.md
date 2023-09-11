@@ -20,6 +20,8 @@ A sample env file has been provided as `.env.sample`. To run the app locally, yo
 
 To make successful requests to the rules engine you'll need to have valid credentials for the environment that the endpoints are hitting.
 
+NB: The mocked data will not successfully pass rule validations. To pass validations and create XMLm update mocked data with values that will pass. For example, replace `Event: "InterestCreditMatch"` with `Event: "Anniversary"`.
+
 #### Setting up your AWS credentials locally
 
 We should be storing AWS profiles/credentials in your `/.aws/credentials` file. If you haven't already, ask for the AWS credentials and create the file and add the following:

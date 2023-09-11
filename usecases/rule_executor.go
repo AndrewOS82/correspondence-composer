@@ -1,22 +1,36 @@
 package usecases
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
-	"fmt"
+	"os"
+	"reflect"
+	"strings"
 
 	"correspondence-composer/models"
+	"correspondence-composer/utils/log"
+)
+
+const PolicyDatapoint = "policyDetails"
+
+var (
+	ErrNoResults    = errors.New("no results returned for rules")
+	ErrBadDatapoint = errors.New("this is not a policy data point")
 )
 
 type RuleExecutor struct {
+	Logger      log.Logger
 	RulesEngine rulesEngineGateway
+	RulesConfig []*models.RuleConfig
 }
 
 type rulesEngineGateway interface {
 	ExecuteRules(rules []*models.Rule) (*models.RulesEngineResponse, error)
 }
 
-func (re *RuleExecutor) ValidateAnniversaryData(data *models.AnniversaryStatement) ([]*models.RuleValidation, error) {
-	validationResults, err := re.ValidatePolicyData(data.Policy)
+func (re *RuleExecutor) ValidateAnniversaryData(ctx context.Context, data *models.AnniversaryStatement) ([]*models.RuleValidation, error) {
+	validationResults, err := re.ValidatePolicyData(ctx, data.Policy)
 	if err != nil {
 		return nil, err
 	}
@@ -25,10 +39,14 @@ func (re *RuleExecutor) ValidateAnniversaryData(data *models.AnniversaryStatemen
 	// send out detailed exceptions.
 	var failedValidations []*models.RuleValidation
 	for _, result := range validationResults {
-		// There is a lot of flexibility in the rules engine around what output is returned when a rule is run.
-		// It seems like the pattern for DMN is: if match, return something, otherwise return nothing.
-		// This is a placeholder for now based on that assumption.
-		if len(result.Output) > 1 && len(result.Output[0]) < 1 {
+		re.Logger.InfoWithFields("Rule result", log.Fields{
+			"_ruleName": result.RuleName,
+			"version":   result.Version,
+			"input":     result.Input,
+			"output":    result.Output,
+		})
+
+		if len(result.Output) > 0 && !result.Output[0].Valid {
 			validation := &models.RuleValidation{
 				RuleName: result.RuleName,
 				Success:  false,
@@ -40,22 +58,16 @@ func (re *RuleExecutor) ValidateAnniversaryData(data *models.AnniversaryStatemen
 	// can we stop validating the other fetched data and early return?
 
 	// If policy data is validated successfully continue validating other necessary data.
-	// roles, err := df.validateRolesData()
 
 	return failedValidations, nil
 }
 
-func (re *RuleExecutor) ValidatePolicyData(data *models.Policy) ([]models.Rule, error) {
-	fmt.Printf("validating policy data! %v\n", data)
-
-	// This is a random rule and input for demonstration purposes. We'll need to decide on a strategy
-	// for selecting the appropriate rules to validate policy data once they have been created.
-	rule := &models.Rule{
-		RuleName: "ProductEligibilityVerification",
-		Version:  1,
-		Input:    map[string]interface{}{"planName": data.PlanCode},
+func (re *RuleExecutor) ValidatePolicyData(_ context.Context, data *models.Policy) ([]models.Rule, error) {
+	var rules []*models.Rule
+	for _, ruleConfig := range re.RulesConfig {
+		rule := re.populatePolicyDataInput(data, ruleConfig)
+		rules = append(rules, rule)
 	}
-	rules := []*models.Rule{rule}
 
 	resp, err := re.RulesEngine.ExecuteRules(rules)
 	if err != nil {
@@ -63,10 +75,60 @@ func (re *RuleExecutor) ValidatePolicyData(data *models.Policy) ([]models.Rule, 
 	}
 
 	if len(resp.Rules) < 1 {
-		return nil, errors.New("no results returned for rules")
+		return nil, ErrNoResults
 	}
 	ruleResults := resp.Rules
-	fmt.Printf("Rule result: %v\n", ruleResults)
 
 	return ruleResults, nil
+}
+
+func (re *RuleExecutor) populatePolicyDataInput(data *models.Policy, ruleConfig *models.RuleConfig) *models.Rule {
+	inputMap := make(map[string]interface{})
+
+	for _, input := range ruleConfig.Inputs {
+		key := input["key"]
+		value, _ := re.getPolicyDatapoint(data, input["value"])
+		inputMap[key] = value
+	}
+
+	rule := &models.Rule{
+		RuleName: ruleConfig.RuleName,
+		Version:  ruleConfig.Version,
+		Input:    inputMap,
+	}
+
+	return rule
+}
+
+func (re *RuleExecutor) getPolicyDatapoint(data *models.Policy, datapoint string) (interface{}, error) {
+	split := strings.Split(datapoint, ".")
+	if !strings.EqualFold(split[0], PolicyDatapoint) {
+		err := ErrBadDatapoint
+		re.Logger.ErrorWithFields(err, log.Fields{
+			"datapoint": datapoint,
+		})
+		return nil, err
+	}
+
+	policyAttribute := split[1]
+	policy := reflect.ValueOf(*data)
+	value := policy.FieldByName(policyAttribute)
+
+	return value.Interface(), nil
+}
+
+func GetRulesConfig(configFile string) ([]*models.RuleConfig, error) {
+	var rulesConfig []*models.RuleConfig
+
+	content, err := os.ReadFile(configFile)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(content, &rulesConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return rulesConfig, nil
 }

@@ -26,17 +26,13 @@ func (m *MockGateway) ExecuteRules(rules []*models.Rule) (*models.RulesEngineRes
 		Version:  1,
 	}
 	// Default to invalid result
-	invalidOutput := models.RuleOutput{
-		map[string]interface{}{},
-	}
-	rule.Output = invalidOutput
+	invalidOutput := models.RuleOutput{}
+	rule.Output = []models.RuleOutput{invalidOutput}
 
 	// Mock valid response for valid scenario
 	if rules[0].Input["planCode"] == "SBFIXUL1" {
-		validOutput := models.RuleOutput{
-			map[string]interface{}{"valid": "true"},
-		}
-		rule.Output = validOutput
+		output := models.RuleOutput{Valid: true}
+		rule.Output = []models.RuleOutput{output}
 	}
 
 	rulesOutput := []models.Rule{rule}

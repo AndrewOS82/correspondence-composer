@@ -22,7 +22,15 @@ type Rule struct {
 	RuleName string                 `json:"ruleName"`
 	Version  int                    `json:"version"`
 	Input    map[string]interface{} `json:"input"`
-	Output   RuleOutput             `json:"output,omitempty"`
+	Output   []RuleOutput           `json:"output,omitempty"`
 }
 
-type RuleOutput []map[string]interface{}
+type RuleOutput struct {
+	Valid bool `json:"valid,omitempty"`
+}
+
+type RuleConfig struct {
+	RuleName string              `json:"ruleName"`
+	Version  int                 `json:"version"`
+	Inputs   []map[string]string `json:"inputs"`
+}

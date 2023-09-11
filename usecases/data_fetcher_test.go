@@ -2,7 +2,6 @@ package usecases_test
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -28,7 +27,7 @@ func TestDataFetcher_FetchAnniversaryData(t *testing.T) {
 		_, err := df.FetchAnniversaryData(context.Background(), "notapolicy")
 
 		// assertion
-		assert.Equal(t, err, errors.New(policyapi.NotFound))
+		assert.Equal(t, err, policyapi.ErrNotFound)
 	})
 
 	t.Run("When the API is successful it returns data", func(t *testing.T) {
@@ -37,6 +36,6 @@ func TestDataFetcher_FetchAnniversaryData(t *testing.T) {
 
 		// assertion
 		assert.NoError(t, err)
-		assert.Equal(t, resp.Policy.PlanCode, policyapi.ValidPlanCode)
+		assert.Equal(t, policyapi.ValidPlanCode, resp.Policy.PlanCode)
 	})
 }

@@ -15,6 +15,7 @@ type Config struct {
 	PolicyAPIAuthToken   string
 	PolicyAPIBaseURL     string
 	PolicyDataSampleFile string
+	RulesConfigFile      string
 	RulesEngine          rulesengine.Config
 	S3                   s3client.Config
 }
@@ -52,5 +53,6 @@ func newConfig(env string) Config {
 		PolicyDataSampleFile: getEnvOrDefault("POLICY_DATA_SAMPLE_FILE", "./gateways/policyapi/sample_policy_data.json"),
 		PolicyAPIAuthToken:   os.Getenv("POLICY_API_TOKEN"),
 		PolicyAPIBaseURL:     os.Getenv("ENTERPRISE_API_BASE_URL"),
+		RulesConfigFile:      getEnvOrDefault("BUSINESS_RULES_CONFIG_FILE", "./config/business_rules.json"),
 	}
 }

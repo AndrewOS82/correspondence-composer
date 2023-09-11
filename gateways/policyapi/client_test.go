@@ -2,7 +2,6 @@ package policyapi
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -15,7 +14,7 @@ func TestPolicyAPIClient_ReturnsErrorWhenAuthTokenInvalid(t *testing.T) {
 
 	resp, err := policyAPIGateway.FetchPolicyData(ctx, policyNumber)
 
-	assert.Equal(t, err, errors.New(Unauthorized))
+	assert.Equal(t, err, ErrUnauthorized)
 	assert.Equal(t, resp.Message, "Unauthorized")
 }
 
@@ -26,7 +25,7 @@ func TestPolicyAPIClient_ReturnsErrorWhenPolicyNotFound(t *testing.T) {
 
 	resp, err := policyAPIGateway.FetchPolicyData(ctx, policyNumber)
 
-	assert.Equal(t, err, errors.New(NotFound))
+	assert.Equal(t, err, ErrNotFound)
 	assert.Equal(t, resp.Message, "Request failed with status code 404")
 }
 

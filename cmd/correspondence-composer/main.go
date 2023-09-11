@@ -21,9 +21,8 @@ import (
 const serviceName = "correspondence-composer"
 
 func main() {
-	// I'm introducing ctx because it's an expected parameter for the policy API client. We have some
-	// nice utils at Pg that can also help us leverage context in error tracing and logging via Datadog.
-	// Waiting to add those in once we have the Datadog integration set up.
+	// TODO: We have some nice utils at Pg that can help us leverage context in error tracing
+	// and logging via Datadog. Waiting to add those in once we have a Datadog integration.
 	ctx, cancelRootCtx := context.WithCancel(context.Background())
 	logger := log.New(log.Config{
 		ServiceName: serviceName,
@@ -47,16 +46,27 @@ func main() {
 	policyAPIGateway := policyapi.New(policyAPIClient, config.PolicyAPIAuthToken, mockPolicyData)
 
 	rulesEngineGateway := rulesgateway.New(config.RulesEngine)
+	rulesConfig, err := usecases.GetRulesConfig(config.RulesConfigFile)
+	if err != nil {
+		logger.ErrorWithFields(err, log.Fields{
+			"configFile": config.RulesConfigFile,
+			"msg":        "error setting up rules config",
+		})
+		return
+	}
 
 	s3 := setupS3Client(config.S3)
 	storageclient := s3client.New(config.S3, s3)
 
 	composer := service.Composer{
+		Logger: logger,
 		DataFetcher: &usecases.DataFetcher{
 			Logger:    logger,
 			PolicyAPI: policyAPIGateway,
 		},
 		RuleExecutor: &usecases.RuleExecutor{
+			Logger:      logger,
+			RulesConfig: rulesConfig,
 			RulesEngine: rulesEngineGateway,
 		},
 		Uploader: &usecases.Uploader{

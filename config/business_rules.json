@@ -1,0 +1,49 @@
+[
+	{
+		"id": "LGPC0AA",
+		"ruleName": "EventVerification",
+		"version": 1,
+		"inputs": [
+			{
+				"key": "policyStatus",
+				"value": "policyDetails.PolicyStatus"
+			},
+			{
+				"key": "event",
+				"value": "policyDetails.Event"
+			},
+			{
+				"key": "planCode",
+				"value": "policyDetails.PlanCode"
+			}
+		],
+		"category": "Pre Check validation",
+		"xmlTags": []
+	},
+	{
+		"id": "LGPI003",
+		"ruleName": "ProductEligibilityVerification",
+		"version": 1,
+		"inputs": [
+			{
+				"key": "planName",
+				"value": "policyDetails.PlanName"
+			}
+		],
+		"category": "Mapping validation",
+		"xmlTags": ["POL_PRODUCT"]
+	},
+	{
+		"id": "LGPI005",
+		"ruleName": "ValidationCarrierDetails",
+		"version": 1,
+		"inputs": [
+			{
+				"key": "productMarketingName",
+				"value": "policyDetails.MarketingName"
+			}
+		],
+		"category": "Mapping validation",
+		"xmlTags": ["POL_PRDCT_MKTG_NAME"]
+	}
+]
