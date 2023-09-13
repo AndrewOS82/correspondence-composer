@@ -3,6 +3,7 @@ package usecases
 import (
 	"encoding/xml"
 
+	"correspondence-composer/mapper"
 	"correspondence-composer/models"
 	xmlgenmodels "correspondence-composer/models/generated"
 )
@@ -10,7 +11,7 @@ import (
 type XMLBuilder struct{}
 
 func (xb *XMLBuilder) BuildDataServicesLetter(policyData *models.AnniversaryStatement) (string, error) {
-	xmlPolicyData := MapAnniversaryData(policyData.Policy)
+	xmlPolicyData := mapper.MapAnniversaryData(policyData.Policy)
 
 	policiesArray := []*xmlgenmodels.POLICY{xmlPolicyData}
 

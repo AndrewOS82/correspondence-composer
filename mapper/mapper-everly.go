@@ -1,4 +1,4 @@
-package usecases
+package mapper
 
 import (
 	"time"
@@ -15,8 +15,40 @@ func MapAnniversaryData(policyData *models.Policy) *xmlgenmodels.POLICY {
 	return finalXMLData
 }
 
-func mapPolicyData(data *models.Policy) *xmlgenmodels.POLICY {
+func MapPartiesToPolicy(data *models.Policy) *xmlgenmodels.PARTIES {
+	var xmlParties []*xmlgenmodels.PARTY
+	partyData := getAllPartyData(data)
 
+	for _, p := range partyData {
+		xmlparty := &xmlgenmodels.PARTY{
+			PARTYCONT: data.PolicyNumber,
+			PARTYID:   p.Party.PartyID,
+			//REF TABLE FROM RULES DOC
+			PARTYROLEID:    0,
+			PARTYTYPE:      p.Party.PartyType,
+			PARTYROLENAME:  p.PartyRole.PartyRole,
+			PARTYRELTOINS:  p.PartyRole.RelationToInsured,
+			PARTYPCT:       p.Party.BeneficiaryPercentage,
+			PARTYFULLNAME:  p.Party.FullName,
+			PARTYPREFIX:    p.Party.Prefix,
+			PARTYFSTNAME:   p.Party.FirstName,
+			PARTYMI:        p.Party.MiddleName,
+			PARTYLSTNAME:   p.Party.LastName,
+			PARTYSUFFIX:    p.Party.Suffix,
+			PARTYDOB:       p.Party.DateOfBirth,
+			PARTYATTAINAGE: p.Party.AttainedAge,
+			PARTYGENDER:    p.Party.Gender,
+		}
+
+		xmlParties = append(xmlParties, xmlparty)
+	}
+
+	return &xmlgenmodels.PARTIES{
+		PARTY: xmlParties,
+	}
+}
+
+func mapPolicyData(data *models.Policy) *xmlgenmodels.POLICY {
 	policy := &xmlgenmodels.POLICY{
 		RECTYPE:     "",
 		POLCONT:     data.PolicyNumber,
@@ -34,11 +66,10 @@ func mapPolicyData(data *models.Policy) *xmlgenmodels.POLICY {
 		POLSERVICEDESC: "",
 		POLSTATUS:      data.PolicyStatus,
 		POLLOB:         data.LineOfBusiness,
-		//NO DATAPOINT DEFINED
-		POLPRCSGCOMP: "",
-		POLDOCTYPE:   data.Event,
-		//NO DATAPOINT DEFINED, should it be hardcoded?
+		POLDOCTYPE:     data.Event,
+		//Requires separate call to /carriers endpoint
 		POLPRDCTCOMP:  "Everly Life",
+		POLPRCSGCOMP:  "",
 		POLISSUEDATE:  data.IssueDate,
 		POLISSUESTATE: data.IssueState,
 		POLCURRYR:     data.PolicyYear,
@@ -50,23 +81,28 @@ func mapPolicyData(data *models.Policy) *xmlgenmodels.POLICY {
 		POLTERMDATE:       data.PolicyTerminationDate,
 		POLRESIDENCESTATE: data.ResidenceState,
 		POLTERM:           data.PolicyTerm,
-		// TO DO: Determine which SystematicProgram to pull from
-		POLPREMAMT:  data.SystematicPrograms[0].Amount,
-		POLPREMMODE: data.PremiumFrequency,
-		// TO DO: Determine logic for which coverage layer / participant to pull from
-		POLRISKCLASS:     data.Coverage.CoverageLayers[0].CoverageParticipants[0].RiskClass,
-		POLEFFECTIVEDATE: data.ApplicationDate,
-		// TO DO: Determine logic for which coverage layer / participant to pull from
-		POLISSUEAGE:      data.Coverage.CoverageLayers[0].CoverageParticipants[0].IssueAge,
-		POLLASTANNIVDATE: data.PreviousPolicyAnniversaryDate,
+		POLPREMMODE:       data.PremiumFrequency,
+		POLEFFECTIVEDATE:  data.ApplicationDate,
+		POLLASTANNIVDATE:  data.PreviousPolicyAnniversaryDate,
 		//No DATAPOINT DEFINED
 		POLCURRANNIVDATE:    "",
 		POLNEXTANNIVENDDATE: data.NextAnniversaryDate,
 		POLFACEVALUE:        int(data.Coverage.TotalCoverageAmt),
 		POLICYVALUES:        mapPolicyValuesToPolicy(data),
-		//PARTYINFORMATION:    mapPartyInfoToPolicy(data),
+		PARTIES:             MapPartiesToPolicy(data),
 		// nolint
 		//CARRIERINFORMATION: mapCarrierDataToPolicy()
+	}
+
+	systematicProgram := getSystematicProgram(data.SystematicPrograms)
+	if systematicProgram != nil {
+		policy.POLPREMAMT = systematicProgram.Amount
+	}
+
+	coverageParticipant := getCoverageParticipant(data.Coverage.CoverageLayers)
+	if coverageParticipant != nil {
+		policy.POLRISKCLASS = coverageParticipant.RiskClass
+		policy.POLISSUEAGE = coverageParticipant.IssueAge
 	}
 
 	datelayout := "2006-01-02"
@@ -94,24 +130,19 @@ func mapPolicyData(data *models.Policy) *xmlgenmodels.POLICY {
 func mapPolicyValuesToPolicy(data *models.Policy) *xmlgenmodels.POLICYVALUE {
 	policyvalues := &xmlgenmodels.POLICYVALUE{
 		//NO DATAPOINTS DEFINED FOR THE BELOW
-		PVALCONT:      "",
-		PVALBEGINDATE: "",
-		PVALENDDATE:   "",
-		// TO DO: Determine logic for which coverage layer to pull from
-		PVALBEGINCOVERVAL: data.Coverage.CoverageLayers[0].OriginalCoverageAmt,
-		PVALENDCOVERVAL:   data.Coverage.TotalCoverageAmt,
-		PVALCHGCOVERVAL:   data.Coverage.TotalCoverageAmt - data.Coverage.CoverageLayers[0].OriginalCoverageAmt,
+		PVALCONT:        "",
+		PVALBEGINDATE:   "",
+		PVALENDDATE:     "",
+		PVALENDCOVERVAL: data.Coverage.TotalCoverageAmt,
 		// TO DO: Need clarity on values to subtract (policy data from last anniversary year)
 		// end value of last year - beginning value of current year
 		PVALBEGINDEATHBNFTVAL: 0,
-		// TO DO: Determine logic for which coverage layer to pull from
-		PVALENDDEATHBNFTVAL: data.Coverage.CoverageLayers[0].GrossDeathBenefitAmt,
 		// TO DO: PVALCHGDEATHBNFTVAL = PVALBEGINDEATHBNFTVAL - PVALENDDEATHBNFTVAL
 		PVALCHGDEATHBNFTVAL: 0,
 		// TO DO: Need clarity on values to subtract (policy data from last anniversary year)
 		// end value of last year - beginning value of current year
 		PVALBEGINSURRVAL: 0,
-		PVALENDSURRVAL:   float64(int(data.PolicyValues.SurrenderValue)),
+		PVALENDSURRVAL:   data.PolicyValues.SurrenderValue,
 		// TO DO: PVALCHGDEATHBNFTVAL = PVALBEGINSURRVAL - PVALENDSURRVAL
 		PVALCHGSURRVAL:   0,
 		PVALBEGINACCTVAL: data.PolicyValues.BeginningAcctValue,
@@ -142,65 +173,90 @@ func mapPolicyValuesToPolicy(data *models.Policy) *xmlgenmodels.POLICYVALUE {
 
 		//NO DATAPOINT DEFINED
 		PVALINTCREDITNEXTYRRATE: 0,
-		// TO DO: Determine logic for which SystematicProgram/PolicyFeatures to pull from
-		PVALCURRPAYAMT:  data.SystematicPrograms[0].Amount,
-		PVALCURRPAYMODE: data.SystematicPrograms[0].Frequency,
-		PVALANNLPSAMT:   data.PolicyFeatures[0].PaymentAmt,
+		PVALANNLPSAMT:           data.PolicyFeatures[0].PaymentAmt,
+	}
+
+	systematicProgram := getSystematicProgram(data.SystematicPrograms)
+	if systematicProgram != nil {
+		policyvalues.PVALCURRPAYAMT = systematicProgram.Amount
+		policyvalues.PVALCURRPAYMODE = systematicProgram.Frequency
+	}
+
+	coverageLayer := getCoverageLayer(data.Coverage.CoverageLayers)
+	if coverageLayer != nil {
+		policyvalues.PVALBEGINCOVERVAL = coverageLayer.OriginalCoverageAmt
+		policyvalues.PVALCHGCOVERVAL = data.Coverage.TotalCoverageAmt - coverageLayer.OriginalCoverageAmt
+		policyvalues.PVALENDDEATHBNFTVAL = coverageLayer.GrossDeathBenefitAmt
 	}
 
 	return policyvalues
 }
 
-//func mapPartyInfoToPolicy(data *models.Policy) *xmlgenmodels.PARTY {
-//	// TO DO: The below will just use the first party listed;
-//	// this is a placeholder until we have finalized logic
-//
-//	party := &xmlgenmodels.PARTY{
-//		PARTYCONT: data.PolicyNumber,
-//		PARTYID:   data.Parties[0].PartyID,
-//		//REF TABLE FROM RULES DOC
-//		PARTYROLEID:    0,
-//		PARTYTYPE:      data.Parties[0].PartyType,
-//		PARTYROLENAME:  data.PartyRoles[0].PartyRole,
-//		PARTYRELTOINS:  data.PartyRoles[0].RelationToInsured,
-//		PARTYPCT:       data.Parties[0].BeneficiaryPercentage,
-//		PARTYFULLNAME:  data.Parties[0].FullName,
-//		PARTYPREFIX:    data.Parties[0].Prefix,
-//		PARTYFSTNAME:   data.Parties[0].FirstName,
-//		PARTYMI:        data.Parties[0].MiddleName,
-//		PARTYLSTNAME:   data.Parties[0].LastName,
-//		PARTYSUFFIX:    data.Parties[0].Suffix,
-//		ADDRLINE1:      data.Parties[0].Addresses[0].AddrLine1,
-//		ADDRLINE2:      data.Parties[0].Addresses[0].AddrLine2,
-//		ADDRLINE3:      data.Parties[0].Addresses[0].AddrLine3,
-//		ADDRCITY:       data.Parties[0].Addresses[0].City,
-//		ADDRSTATE:      data.Parties[0].Addresses[0].State,
-//		ADDRZIP:        data.Parties[0].Addresses[0].ZipCode,
-//		ADDRCNTRYCODE:  data.Parties[0].Addresses[0].AddrCountry,
-//		ADDRTYPE:       data.Parties[0].Addresses[0].AddressType,
-//		ADDRPREFIND:    data.Parties[0].Addresses[0].PrefAddressInd,
-//		PARTYDOB:       data.Parties[0].DateOfBirth,
-//		PARTYATTAINAGE: data.Parties[0].AttainedAge,
-//		PARTYGENDER:    data.Parties[0].Gender,
-//		EMAILADDR:      data.Parties[0].Emails[0].EmailAddress,
-//		EMAILTYPE:      data.Parties[0].Emails[0].EmailType,
-//		PHNNUM:         constructPhoneNum(data.Parties[0].Phones[0]),
-//		PHNTYPE:        data.Parties[0].Phones[0].PhoneType,
-//		//NO DATAPOINTS DEFINED
-//		PREFERRED:         "",
-//		PARTYDELIVERYFLAG: "",
-//		PARTYDELIVERYDESC: "",
-//	}
-//
-//	if data.Parties[0].Addresses[0].EndDate != "null" {
-//		party.ADDRSTATUS = "Inactive"
-//	} else {
-//		party.ADDRSTATUS = "Active"
-//	}
-//
-//	return party
-//}
-//
+func getPartyDataByID(id string, parties []*models.Party) *models.Party {
+	for _, party := range parties {
+		if party.PartyID == id {
+			return party
+		}
+	}
+	return nil
+}
+
+type AllPartyData struct {
+	Party     *models.Party
+	PartyRole *models.PartyRole
+}
+
+func getAllPartyData(data *models.Policy) []*AllPartyData {
+	var allPartyData []*AllPartyData
+
+	for _, role := range data.PartyRoles {
+		partyDataFromAPI := getPartyDataByID(role.PartyID, data.Parties)
+		if partyDataFromAPI != nil {
+			partydata := &AllPartyData{
+				Party:     partyDataFromAPI,
+				PartyRole: role,
+			}
+			allPartyData = append(allPartyData, partydata)
+		}
+	}
+
+	return allPartyData
+}
+
+func getSystematicProgram(allSysPrograms []*models.SystematicProgram) *models.SystematicProgram {
+	for _, sps := range allSysPrograms {
+		if sps.ArrType == "PAYMENT" && sps.Reason == "PREMIUMREASON" {
+			return sps
+		}
+	}
+
+	return nil
+}
+
+func getCoverageLayer(allCoverageLayers []*models.CoverageLayer) *models.CoverageLayer {
+	for _, covlayer := range allCoverageLayers {
+		if covlayer.CoverageType == "BASE" {
+			return covlayer
+		}
+	}
+
+	return nil
+}
+
+func getCoverageParticipant(allCoverageLayers []*models.CoverageLayer) *models.CoverageParticipant {
+	covlayer := getCoverageLayer(allCoverageLayers)
+	if covlayer != nil {
+		for _, participant := range covlayer.CoverageParticipants {
+			if participant.PartyID == "Party_PI_1" {
+				return participant
+			}
+		}
+		return nil
+	}
+
+	return nil
+}
+
 //func constructPhoneNum(phoneData *models.Phone) string {
 //	countryCode := phoneData.CountryCode
 //	areaCode := phoneData.AreaCode

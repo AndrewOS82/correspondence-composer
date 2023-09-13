@@ -37,13 +37,15 @@ type Policy struct {
 	Coverage                      *Coverage            `json:"coverage,omitempty"`
 	PolicyFeatures                []*PolicyFeature     `json:"policyFeatures,omitempty"`
 	Parties                       []*Party             `json:"parties,omitempty"`
-	PartyRoles                    []*PartyRole         `json:"partyRole,omitempty"`
+	PartyRoles                    []*PartyRole         `json:"partyRoles,omitempty"`
 	SystematicPrograms            []*SystematicProgram `json:"systematicPrograms,omitempty"`
 }
 
 type SystematicProgram struct {
 	Amount    float64 `json:"amount,omitempty"`
-	Frequency string  `json:"frequency.omitempty"`
+	Frequency string  `json:"frequency,omitempty"`
+	ArrType   string  `json:"arrType,omitempty"`
+	Reason    string  `json:"reason,omitempty"`
 }
 
 type PolicyValues struct {
@@ -83,14 +85,16 @@ type Coverage struct {
 }
 
 type CoverageLayer struct {
-	CoverageParticipants []*CoverageParticipants `json:"coverageParticipants,omitempty"`
-	OriginalCoverageAmt  float64                 `json:"originalCoverageAmt,omitempty"`
-	GrossDeathBenefitAmt float64                 `json:"grossDeathBenefitAmt,omitempty"`
+	CoverageParticipants []*CoverageParticipant `json:"coverageParticipants,omitempty"`
+	OriginalCoverageAmt  float64                `json:"originalCoverageAmt,omitempty"`
+	GrossDeathBenefitAmt float64                `json:"grossDeathBenefitAmt,omitempty"`
+	CoverageType         string                 `json:"coverageType,omitempty"`
 }
 
-type CoverageParticipants struct {
+type CoverageParticipant struct {
 	RiskClass string `json:"riskClass,omitempty"`
 	IssueAge  int    `json:"issueAge,omitempty"`
+	PartyID   string `json:"partyID,omitempty"`
 }
 
 type Party struct {
@@ -138,6 +142,11 @@ type Address struct {
 	EndDate        string `json:"endDate,omitempty"`
 }
 
+type PartyAttribute struct {
+	StartDate string  `json:"startDate,omitempty"`
+	EndDate   *string `json:"endDate,omitempty"`
+}
+
 type Identification struct {
 	IdentificationValue string `json:"identificationValue,omitempty"`
 	IdentificationType  string `json:"identificationType,omitempty"`
@@ -146,4 +155,5 @@ type Identification struct {
 type PartyRole struct {
 	PartyRole         string `json:"partyRole,omitempty"`
 	RelationToInsured string `json:"relationToInsured,omitempty"`
+	PartyID           string `json:"partyID,omitempty"`
 }
