@@ -16,8 +16,10 @@ type Config struct {
 	PolicyAPIBaseURL     string
 	PolicyDataSampleFile string
 	RulesConfigFile      string
+	IncomingKafkaTopic   string
 	RulesEngine          rulesengine.Config
 	S3                   s3client.Config
+	LogLevel             string
 }
 
 func GetConfig(logger log.Logger) Config {
@@ -54,5 +56,7 @@ func newConfig(env string) Config {
 		PolicyAPIAuthToken:   os.Getenv("POLICY_API_TOKEN"),
 		PolicyAPIBaseURL:     os.Getenv("ENTERPRISE_API_BASE_URL"),
 		RulesConfigFile:      getEnvOrDefault("BUSINESS_RULES_CONFIG_FILE", "./config/business_rules.json"),
+		IncomingKafkaTopic:   os.Getenv("INCOMING_KAFKA_TOPIC"),
+		LogLevel:             os.Getenv("LOG_LEVEL"),
 	}
 }

@@ -4,17 +4,18 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 
 	"correspondence-composer/models"
+	"correspondence-composer/utils/log"
 )
 
 type gateway struct {
 	config    Config
 	authToken *models.Token
+	logger    log.Logger
 }
 
 type Config struct {
@@ -26,12 +27,13 @@ type Config struct {
 }
 
 // nolint
-func New(config Config) *gateway {
-	token, _ := getAuthToken(config)
+func New(config Config, logger log.Logger) *gateway {
+	token, _ := getAuthToken(logger, config)
 
 	return &gateway{
 		authToken: token,
 		config:    config,
+		logger:    logger,
 	}
 }
 
@@ -62,14 +64,17 @@ func (g *gateway) ExecuteRules(rules []*models.Rule) (*models.RulesEngineRespons
 	var rulesResponse models.RulesEngineResponse
 	err = json.Unmarshal([]byte(string(body)), &rulesResponse)
 	if err != nil {
-		fmt.Printf("Error decoding rule execution response: %v\n", err)
+		g.logger.ErrorWithFields(err, log.Fields{
+			"msg": "error decoding rule execution response",
+		})
+
 		return nil, err
 	}
 
 	return &rulesResponse, nil
 }
 
-func getAuthToken(config Config) (*models.Token, error) {
+func getAuthToken(logger log.Logger, config Config) (*models.Token, error) {
 	data := url.Values{
 		"username":   {config.Username},
 		"password":   {config.Password},
@@ -78,13 +83,17 @@ func getAuthToken(config Config) (*models.Token, error) {
 
 	resp, err := http.PostForm(config.AuthEndpoint, data)
 	if err != nil {
-		fmt.Printf("Error fetching token: %v\n", err)
+		logger.ErrorWithFields(err, log.Fields{
+			"msg": "error fetching token",
+		})
 		return nil, err
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("Error reading token response: %v\n", err)
+		logger.ErrorWithFields(err, log.Fields{
+			"msg": "error reading token response",
+		})
 		return nil, err
 	}
 
@@ -93,7 +102,9 @@ func getAuthToken(config Config) (*models.Token, error) {
 	var token models.Token
 	err = json.Unmarshal([]byte(string(body)), &token)
 	if err != nil {
-		fmt.Printf("Error decoding token response: %v\n", err)
+		logger.ErrorWithFields(err, log.Fields{
+			"msg": "error decoding token response",
+		})
 		return nil, err
 	}
 
@@ -130,7 +141,9 @@ func (g *gateway) executeRulesRequest(rulesRequest *models.RulesEngineRequest) (
 	token := g.authToken.Token
 	requestBody, err := json.Marshal(rulesRequest)
 	if err != nil {
-		fmt.Printf("Error building rule execution request parameters: %v\n", err)
+		g.logger.ErrorWithFields(err, log.Fields{
+			"msg": "error building rule execution request parameters",
+		})
 		return nil, err
 	}
 
@@ -140,7 +153,9 @@ func (g *gateway) executeRulesRequest(rulesRequest *models.RulesEngineRequest) (
 	r.Header.Add("authorization", "Bearer "+token)
 	resp, err := client.Do(r)
 	if err != nil {
-		fmt.Printf("Error executing rule: %v\n", err)
+		g.logger.ErrorWithFields(err, log.Fields{
+			"msg": "error executing rule",
+		})
 		return nil, err
 	}
 
@@ -148,14 +163,16 @@ func (g *gateway) executeRulesRequest(rulesRequest *models.RulesEngineRequest) (
 }
 
 func (g *gateway) refetchToken() {
-	token, _ := getAuthToken(g.config)
+	token, _ := getAuthToken(g.logger, g.config)
 	g.authToken = token
 }
 
 func (g *gateway) responseBody(resp *http.Response) ([]byte, error) {
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("Error reading response: %v\n", err)
+		g.logger.ErrorWithFields(err, log.Fields{
+			"msg": "error reading response",
+		})
 		return nil, err
 	}
 

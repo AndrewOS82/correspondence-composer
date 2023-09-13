@@ -43,6 +43,7 @@ type (
 		ErrorWithFields(error, ...Fields)
 		ErrorWithDDFields(error, ...Fields)
 		FatalErrorWithDDFields(error, ...Fields)
+		SetLevel(levelStr string)
 	}
 
 	Fields map[string]interface{}
@@ -79,6 +80,17 @@ func New(c Config) Logger {
 	})
 
 	return &logrusLogger{baseEntry}
+}
+
+func (l *logrusLogger) SetLevel(levelStr string) {
+	level, err := logrus.ParseLevel(levelStr)
+
+	if err != nil {
+		l.Warnf("could not parse log level: %s", levelStr)
+		return
+	}
+
+	l.Logger.SetLevel(level)
 }
 
 func (l *logrusLogger) LogWithFields(level logrus.Level, msg string, fields ...Fields) {

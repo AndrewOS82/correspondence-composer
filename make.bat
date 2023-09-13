@@ -16,15 +16,15 @@ GOTO %1
   GOTO End
 
 :build
-	%GOBUILD% -o bin/%NAME% -i %ENTRY_PATH%
+	%GOBUILD% -o bin/%NAME% %ENTRY_PATH%
   GOTO End
 
 :kafka-start
-	docker-compose -f kafka.yml up -d
+	docker-compose -f kafka.yml up -d --remove-orphans
   GOTO End
 
 :kafka-stop
-	docker-compose -f kafka.yml down -d
+	docker-compose -f kafka.yml down
   GOTO End
 
 :docker-build
@@ -40,10 +40,6 @@ GOTO %1
   GOTO End
 
 :lint
-	golangci-lint run -c .golangci.yml
-  GOTO End
-
-:lint-fix
 	golangci-lint run -c .golangci.yml --fix
   GOTO End
 

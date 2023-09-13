@@ -1,18 +1,22 @@
 package kafkaclient
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+
+	"correspondence-composer/utils/log"
 )
 
 type kafkaProducer struct {
 	topic    string
 	producer *kafka.Producer
+	logger   log.Logger
 }
 
 func (kp *kafkaProducer) Publish(key string, value string) error {
+	kp.logger.Debugln("publishing event")
+
 	err := kp.producer.Produce(
 		&kafka.Message{
 			TopicPartition: kafka.TopicPartition{
@@ -29,7 +33,13 @@ func (kp *kafkaProducer) Publish(key string, value string) error {
 		nil)
 
 	if err != nil {
-		fmt.Printf("error when publishing event: %v", err.Error())
+		kp.logger.ErrorWithFields(err, log.Fields{
+			"msg":   "error when producing kafka message",
+			"key":   key,
+			"value": value,
+			"topic": &kp.topic,
+		})
+
 		return err
 	}
 

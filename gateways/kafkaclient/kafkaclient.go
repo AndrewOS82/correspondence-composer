@@ -1,12 +1,13 @@
 package kafkaclient
 
 import (
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+
+	"correspondence-composer/utils/log"
 )
 
 type EventConsumer func(key string, value string)
@@ -17,7 +18,8 @@ type EventPublisher interface {
 }
 
 type Kafka struct {
-	Config *Config
+	config Config
+	logger log.Logger
 }
 
 type Config struct {
@@ -29,25 +31,34 @@ type Config struct {
 	SASLPassword     string
 }
 
-func New(config Config) Kafka {
-	return Kafka{Config: &config}
+func New(config Config, logger log.Logger) Kafka {
+	return Kafka{
+		config: config,
+		logger: logger,
+	}
 }
 
 func (k *Kafka) Subscribe(topic string, consumer EventConsumer) error {
-	kafkaConsumer, err := kafka.NewConsumer(convertConfigToKafkaConfig(k.Config))
+	kafkaConsumer, err := kafka.NewConsumer(convertConfigToKafkaConfig(k.config))
 	defer func() {
 		_ = kafkaConsumer.Close()
 	}()
 
 	if err != nil {
-		fmt.Printf("failed to create consumer: %s", err)
+		k.logger.ErrorWithFields(err, log.Fields{
+			"msg": "failed to create consumer",
+		})
+
 		return err
 	}
 
 	err = kafkaConsumer.SubscribeTopics([]string{topic}, nil)
 
 	if err != nil {
-		fmt.Printf("failed to subscribe: %s", err)
+		k.logger.ErrorWithFields(err, log.Fields{
+			"msg":   "failed to subscribe",
+			"topic": topic,
+		})
 		return err
 	}
 
@@ -55,16 +66,13 @@ func (k *Kafka) Subscribe(topic string, consumer EventConsumer) error {
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
 
-	fmt.Printf("%+v\n", k.Config)
-
-	fmt.Println("entering message pump")
+	k.logger.Debug("entering kafka select loop")
 
 	run := true
 	for run {
 		select {
 		case sig := <-sigchan:
-			fmt.Printf("caught signal %v: Terminating\n", sig)
-			fmt.Println("setting run=false")
+			k.logger.Infof("caught signal %v: Terminating\n", sig)
 			run = false
 		default:
 			//todo: consider making the timeout configurable
@@ -77,23 +85,26 @@ func (k *Kafka) Subscribe(topic string, consumer EventConsumer) error {
 			err := k.processEvent(event, consumer)
 
 			if err != nil {
-				fmt.Printf("error when processing received event: %v \n", err.Error())
+				k.logger.ErrorWithFields(err, log.Fields{
+					"msg": "error when processing received event",
+				})
+
 				run = false
 			}
 		}
 	}
 
-	fmt.Println("exiting message pump")
+	k.logger.Debug("exiting kafka select loop")
 
 	return nil
 }
 
 func (k *Kafka) processEvent(event kafka.Event, consumer EventConsumer) error {
-	fmt.Print("processEvent \n")
+	k.logger.Debugln("processEvent")
 
 	switch e := event.(type) {
 	case *kafka.Message:
-		fmt.Print("message \n")
+		k.logger.Debugln("message")
 
 		//todo: better handling of bytearrays, consider leveraging Avro, etc
 		consumer(string(e.Key), string(e.Value))
@@ -103,26 +114,42 @@ func (k *Kafka) processEvent(event kafka.Event, consumer EventConsumer) error {
 		// automatically recover. But in this example we choose to terminate
 		// the application if all brokers are down.
 
-		fmt.Printf("error in kafka pipeline: %v\n", e.Code())
-
 		if e.Code() == kafka.ErrAllBrokersDown {
+			k.logger.ErrorWithFields(e, log.Fields{
+				"msg": "Cannot connect to kafka ",
+			})
+
 			return e
 		}
 
+		k.logger.InfoWithFields(e.String(), log.Fields{
+			"msg": "recoverable kafka runtime error received, continuing processing",
+		})
+
 	case kafka.OffsetsCommitted:
-		fmt.Print("offsetsCommitted \n")
+		k.logger.Debugln("offsetsCommitted")
+
 		// You likely won't want this in production, but this event is helpful in debugging
 		// commits while testing.
 
 		if e.Error != nil {
-			fmt.Printf("commit offset err: %v", e.Error)
-		} else {
-			for _, offset := range e.Offsets {
-				fmt.Printf("offset committed: %s\n", offset)
-			}
+			k.logger.ErrorWithFields(e.Error, log.Fields{
+				"msg": "error when committing offset to kafka",
+			})
+
+			return e.Error
+
 		}
+
+		for _, offset := range e.Offsets {
+
+			k.logger.InfoWithFields("offset committed", log.Fields{
+				"offset": offset,
+			})
+		}
+
 	default:
-		fmt.Printf("default: %v\n", e.String())
+		k.logger.Debugf("default: %v\n", e.String())
 
 		// This captures all the other Poll() events and are effectively ignored.
 	}
@@ -131,13 +158,13 @@ func (k *Kafka) processEvent(event kafka.Event, consumer EventConsumer) error {
 }
 
 func (k *Kafka) Publish(topic string) (EventPublisher, error) {
-
-	fmt.Printf("%+v\n", k.Config)
-
-	producer, err := kafka.NewProducer(convertConfigToKafkaConfig(k.Config))
+	producer, err := kafka.NewProducer(convertConfigToKafkaConfig(k.config))
 
 	if err != nil {
-		fmt.Printf("error when creating producer: %v\n", err.Error())
+		k.logger.ErrorWithFields(err, log.Fields{
+			"msg": "error when creating producer",
+		})
+
 		return nil, err
 	}
 
@@ -150,7 +177,7 @@ func (k *Kafka) Publish(topic string) (EventPublisher, error) {
 
 // -------- utility functions ----------
 
-func convertConfigToKafkaConfig(config *Config) *kafka.ConfigMap {
+func convertConfigToKafkaConfig(config Config) *kafka.ConfigMap {
 	kafkaConfig := kafka.ConfigMap{
 		"bootstrap.servers": config.BootstrapServer,
 		"security.protocol": config.SecurityProtocol,

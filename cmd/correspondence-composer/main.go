@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -29,6 +28,8 @@ func main() {
 	})
 	config := config.GetConfig(logger)
 
+	logger.SetLevel(config.LogLevel)
+
 	policyAPIClient, err := policyapi.NewClientWithResponses(config.PolicyAPIBaseURL)
 	if err != nil {
 		logger.ErrorWithFields(err, log.Fields{
@@ -45,7 +46,7 @@ func main() {
 	}
 	policyAPIGateway := policyapi.New(policyAPIClient, config.PolicyAPIAuthToken, mockPolicyData)
 
-	rulesEngineGateway := rulesgateway.New(config.RulesEngine)
+	rulesEngineGateway := rulesgateway.New(config.RulesEngine, logger)
 	rulesConfig, err := usecases.GetRulesConfig(config.RulesConfigFile)
 	if err != nil {
 		logger.ErrorWithFields(err, log.Fields{
@@ -55,7 +56,7 @@ func main() {
 		return
 	}
 
-	s3 := setupS3Client(config.S3)
+	s3 := setupS3Client(logger, config.S3)
 	storageclient := s3client.New(config.S3, s3)
 
 	composer := service.Composer{
@@ -75,17 +76,21 @@ func main() {
 		XMLBuilder: &usecases.XMLBuilder{},
 	}
 
-	kafka := kafkaclient.New(config.Kafka)
+	kafka := kafkaclient.New(config.Kafka, logger)
 	// nolint
-	kafka.Subscribe("correspondence.test.one", func(key string, value string) {
-		handleKafkaMessage(ctx, key, value, composer)
+	kafka.Subscribe(config.IncomingKafkaTopic, func(key string, value string) {
+		handleKafkaMessage(ctx, logger, key, value, composer)
 	})
 
 	cancelRootCtx()
 }
 
-func handleKafkaMessage(ctx context.Context, messageKey string, messageValue string, composer service.Composer) {
-	fmt.Printf("Running composer process with value: [%v]\n", messageValue)
+func handleKafkaMessage(ctx context.Context, logger log.Logger, messageKey string, messageValue string, composer service.Composer) {
+	logger.InfoWithFields("Running composer process", log.Fields{
+		"key":   messageKey,
+		"value": messageValue,
+	})
+
 	// I don't know what the real kafka events will look like. This is a mock just to get
 	// and end-to-end demo of the app working with an incoming dynamic policy number.
 	newEvent := &models.KafkaEvent{
@@ -94,19 +99,21 @@ func handleKafkaMessage(ctx context.Context, messageKey string, messageValue str
 	}
 	err := composer.RunProcess(ctx, newEvent)
 	if err != nil {
-		fmt.Printf("Composer process failed. Error: %v\n", err)
+		logger.ErrorWithFields(err, log.Fields{
+			"msg": "composer process failed",
+		})
 		return
 	}
-
-	fmt.Printf("Composer finished successfully. Completed message: [%v] [%v]\n", messageKey, messageValue)
 }
 
-func setupS3Client(config s3client.Config) *s3.Client {
+func setupS3Client(logger log.Logger, config s3client.Config) *s3.Client {
 	ctx := context.Background()
 	// TO DO: set up dynamic config
 	cfg, err := awsconfig.LoadDefaultConfig(ctx, awsconfig.WithRegion(config.AWSRegion))
 	if err != nil {
-		fmt.Printf("Could not load AWS config")
+		logger.ErrorWithFields(err, log.Fields{
+			"msg": "could not load AWS config",
+		})
 	}
 
 	return s3.NewFromConfig(cfg)
