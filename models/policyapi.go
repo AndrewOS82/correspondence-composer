@@ -39,6 +39,7 @@ type Policy struct {
 	Parties                       []*Party             `json:"parties,omitempty"`
 	PartyRoles                    []*PartyRole         `json:"partyRole,omitempty"`
 	SystematicPrograms            []*SystematicProgram `json:"systematicPrograms,omitempty"`
+	Timestamp                     string               `json:"timestamp,omitempty"`
 }
 
 type SystematicProgram struct {

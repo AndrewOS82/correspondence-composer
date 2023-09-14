@@ -45,5 +45,18 @@
 		],
 		"category": "Mapping validation",
 		"xmlTags": ["POL_PRDCT_MKTG_NAME"]
+	},
+	{
+		"id": "LGPI006",
+		"ruleName": "DocumentTriggerDate",
+		"version": 1,
+		"inputs": [
+			{
+				"key": "eventStartDate",
+				"value": "policyDetails.Timestamp"
+			}
+		],
+		"category": "Mapping validation",
+		"xmlTags": ["POL_CYCLE_DATE"]
 	}
 ]
